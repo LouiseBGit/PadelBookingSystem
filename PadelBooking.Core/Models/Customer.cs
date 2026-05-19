@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PadelBooking.Core.Models
 {
-    internal class Customer
+    public class Customer
     {
         public int Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
