@@ -1,4 +1,6 @@
-﻿using PadelBooking.Core.Data;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using PadelBooking.Core.Data;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 using System;
@@ -22,30 +24,50 @@ namespace PadelBooking.Core.Repositories
         {
             _context = context;
         }
+        //CRUD -create, read, update, delete
 
-        public Task AddAsync(Booking booking)
+        //lägga till en ny bokning i databasen
+        public async Task AddAsync(Booking booking)
         {
-            throw new NotImplementedException();
+            await _context.Bookings.AddAsync(booking);
+            //sparar i databasen
+            await _context.SaveChangesAsync();
+
         }
 
-        public Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            throw new NotImplementedException();
-        }
+            //hitta bokningen för ett visst ID
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
 
-        public Task<List<Booking>> GetAllBookingsAsync()
-        {
-            throw new NotImplementedException();
+            //om bokningen finns
+            if (booking != null)
+            {
+                //ta bort bokning
+                _context.Bookings.Remove(booking);
+                //spara ändringarna
+                await _context.SaveChangesAsync();
+            }
         }
-
-        public Task<Booking?> GetBookingByIdAsync(int id)
+        //hämtar alla bokningar från databasen 
+        public async Task<List<Booking>> GetAllBookingsAsync()
         {
-            throw new NotImplementedException();
+            //tar tabellen bookings i databasen som returneras som en lista
+            //await = väntar på databasen men utan att blockera programmet
+            return await _context.Bookings.ToListAsync();
         }
-
-        public Task UpdateAsync(Booking booking)
+        //hämtar en bokning för det ID man skickar in
+        public async Task<Booking?> GetBookingByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            //returnera första raden som stämmer överrens, annars null
+            return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
+        }
+        //uppdaterar en redan existerande bokning i databasen
+        public async Task UpdateAsync(Booking booking)
+        {
+            _context.Bookings.Update(booking);
+            //spara uppdateringen
+            await _context.SaveChangesAsync();
         }
     }
 }
