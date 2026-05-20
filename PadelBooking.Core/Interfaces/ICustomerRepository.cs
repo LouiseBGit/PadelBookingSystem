@@ -8,7 +8,7 @@ using PadelBooking.Core.Models;
 namespace PadelBooking.Core.Interfaces
 {
     //interface -vad som ska göras, men inte hur det görs (som ett kontrakt)
-    public class ICustomerRepository
+    public interface ICustomerRepository
     {
 
     }
