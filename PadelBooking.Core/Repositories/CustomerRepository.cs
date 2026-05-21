@@ -22,7 +22,7 @@ namespace PadelBooking.Core.Repositories
             _context = context;
         }
 
-        public Task AddAsync(Booking booking)
+        public Task AddAsync(Customer customer)
         {
             throw new NotImplementedException();
         }
@@ -32,17 +32,17 @@ namespace PadelBooking.Core.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<List<Booking>> GetAllBookingsAsync()
+        public Task<List<Customer>> GetAllCustomersAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<Booking?> GetBookingByIdAsync(int id)
+        public Task<Customer?> GetCustomerByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(Booking booking)
+        public Task UpdateAsync(Customer customer)
         {
             throw new NotImplementedException();
         }
