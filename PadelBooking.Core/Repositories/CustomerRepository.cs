@@ -11,7 +11,7 @@ namespace PadelBooking.Core.Repositories
 {
     //Repository = använder interface IBookingRepository
     //här ligger koden till databasen
-    public class CustomerRepository : IBookingRepository
+    public class CustomerRepository : ICustomerRepository
     {
         //databaskopplingen
         private readonly AppDbContext _context;
