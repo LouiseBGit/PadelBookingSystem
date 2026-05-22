@@ -7,22 +7,39 @@ using PadelBooking.Core.Models;
 
 namespace PadelBooking.Core.Interfaces
 {
+    /// <summary>
+    /// interface -för hantrering av kunder i databasen
+    /// </summary>
     //interface -vad som ska göras, men inte hur det görs (som ett kontrakt)
     //metoderna som måste finnas för att hantera bokning
     //Task = asynkron metod --> annat kan göras undertiden
     public interface ICustomerRepository
     {
-        //hämta alla kunder från databasen
-        //returnera som en lista
+        /// <summary>
+        /// hämta alla kunder från databasen
+        /// </summary>
+        /// <returns>returnerar en lista</returns>
         Task<List<Customer>> GetAllCustomersAsync();
-        //hämta en kund med ID
-        //? = null om ingen kund hittas med det ID
+        /// <summary>
+        /// hämta en kund med ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>returnerar kund på specifikt ID, eller null om ingen kund finns</returns>
         Task<Customer?> GetCustomerByIdAsync(int id);
-        //lägg till kund
+        /// <summary>
+        /// lägg till kund
+        /// </summary>
+        /// <param name="customer"></param>
         Task AddAsync(Customer customer);
-        //uppdatera kund
+        /// <summary>
+        /// uppdatera kund
+        /// </summary>
+        /// <param name="customer"></param>
         Task UpdateAsync(Customer customer);
-        //ta bort kund med ID
+        /// <summary>
+        /// ta bort kund med ID
+        /// </summary>
+        /// <param name="id"></param>
         Task DeleteAsync(int id);
 
 
