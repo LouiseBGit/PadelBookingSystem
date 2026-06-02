@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
+using PadelBooking.Core.DTOs;
 
 namespace PadelBooking.API.Controllers
 {
@@ -16,21 +17,37 @@ namespace PadelBooking.API.Controllers
         //dependency injection
         private readonly IBookingService _bookingService;
 
-        //konstruktor
+        /// <summary>
+        /// konstruktor
+        /// </summary>
+        /// <param name="bookingService"></param>
         public BookingsController(IBookingService bookingService)
         {
             _bookingService = bookingService;
         }
 
-        //ActionResult = controllern returnerar HTTP-svar
 
+        //ActionResult = controllern returnerar HTTP-svar
+        /// <summary>
+        /// hämtar alla bokningar
+        /// </summary>
+        /// <returns>lista med bokningar - DTO-objekt</returns>
         [HttpGet] 
-        public async Task<ActionResult<List<Booking>>> GetAll()
+        public async Task<ActionResult<List<BookingDto>>> GetAll()
         {
+            //hämtar alla bokningar från service
             var bookings = await _bookingService.GetAllBookingsAsync();
 
+            //mapping -entity till DTO
+            var bookingDtos = bookings.Select(b => new BookingDto
+            {
+                Id = b.Id,
+                CourtNumber = b.CourtNumber,
+                StartTime = b.StartTime
+            }).ToList();
+
             //returnerar JSON-data
-            return Ok(bookings);
+            return Ok(bookingDtos);
         }
         /// <summary>
         /// hämtar specifik bokning baserat på ID
@@ -38,16 +55,24 @@ namespace PadelBooking.API.Controllers
         /// <param name="id"></param>
         /// <returns>returnerar bokning eller 404 om den inte finns</returns>
         [HttpGet("{id}")] 
-        public async Task<ActionResult<Booking>> GetBookingById(int id)
+        public async Task<ActionResult<BookingDto>> GetBookingById(int id)
         {
-            var bookings = await _bookingService.GetBookingByIdAsync(id);
+            var booking = await _bookingService.GetBookingByIdAsync(id);
 
-            if(bookings == null)
+            if(booking == null)
             {
                 return NotFound();
             }
 
-            return Ok(bookings);
+            //mapping -entity till DTO
+            var bookingDto = new BookingDto
+            {
+                Id = booking.Id,
+                CourtNumber = booking.CourtNumber,
+                StartTime = booking.StartTime
+            };
+
+            return Ok(bookingDto);
         }
         /// <summary>
         /// skapar ny bokning 
@@ -55,13 +80,15 @@ namespace PadelBooking.API.Controllers
         /// </summary>
         /// <param name="booking"></param>
         [HttpPost] 
-        public async Task<ActionResult<Booking>> CreateBooking(Booking booking)
+        public async Task<ActionResult> CreateBooking(CreateBookingDto dto)
         {
-            //koll om det är tomt i request-bodyn
-            if (booking == null)
+            //mapping - DTO till Entity
+            var booking = new Booking
             {
-                return BadRequest("Tom bokning");
-            }
+                CourtNumber = dto.CourtNumber,
+                StartTime = dto.StartTime
+            };
+
             //service hanterar reglerna
             var result = await _bookingService.CreateBookingAsync(booking);
 
@@ -83,9 +110,9 @@ namespace PadelBooking.API.Controllers
         public async Task<IActionResult> DeleteBooking(int id)
         {
             //koll om bokning finns 
-            var bookings = await _bookingService.GetBookingByIdAsync(id);
+            var booking = await _bookingService.GetBookingByIdAsync(id);
 
-            if (bookings == null)
+            if (booking == null)
             {
                 return NotFound("Bokningen hittades inte");
             }
@@ -105,18 +132,17 @@ namespace PadelBooking.API.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="booking"></param>
-        /// <returns></returns>
+        /// <returns>uppdaterad bokning</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBooking(int id, Booking booking)
+        public async Task<IActionResult> UpdateBooking(int id, UpdateBookingDto dto)
         {
-            //koll om request är tom
-            if (booking == null)
+            //mapping - DTO till entity 
+            var booking = new Booking
             {
-                return BadRequest("Bokningen är tom");
-            }
-
-            //ser till att rätt ID uppdateras
-            booking.Id = id;
+                Id = id,
+                CourtNumber = dto.CourtNumber,
+                StartTime = dto.StartTime
+            };
 
             //service kontrollerar regler innan uppdatering görs
             var result = await _bookingService.UpdateBookingAsync(booking);
