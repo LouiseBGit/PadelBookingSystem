@@ -10,7 +10,7 @@ namespace PadelBooking.Core.Interfaces
     public interface ICustomerService
     {
         Task<List<Customer>> GetAllCustomerAsync();
-        Task<Customer?> GetAllCustomerById(int id);
+        Task<Customer?> GetCustomerByIdAsync(int id);
         Task<bool> CreateCustomerAsync(Customer customer);
         Task<bool> UpdateCustomerAsync(Customer customer);
         Task<bool> DeleteCustomerAsync(int id);

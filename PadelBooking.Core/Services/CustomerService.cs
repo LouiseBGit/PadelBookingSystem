@@ -67,7 +67,7 @@ namespace PadelBooking.Core.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns>kunden om denne finns, annars null</returns>
-        public async Task<Customer?> GetAllCustomerById(int id)
+        public async Task<Customer?> GetAllCustomerByIdAsync(int id)
         {
             return await _repository.GetCustomerByIdAsync(id);
             
