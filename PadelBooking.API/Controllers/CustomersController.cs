@@ -37,7 +37,7 @@ namespace PadelBooking.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomerDto>> GetAllCustomerById(int id)
         {
-            var customer = await _customerService.GetAllCustomerById(id);
+            var customer = await _customerService.GetCustomerByIdAsync(id);
 
             if(customer == null)
             {
@@ -80,7 +80,7 @@ namespace PadelBooking.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCustomer(int id)
         {
-            var customer = await _customerService.GetAllCustomerById(id);
+            var customer = await _customerService.GetCustomerByIdAsync(id);
 
             if (customer == null)
             {
