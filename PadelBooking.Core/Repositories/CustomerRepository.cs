@@ -1,4 +1,5 @@
-﻿using PadelBooking.Core.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PadelBooking.Core.Data;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 using System;
@@ -22,29 +23,37 @@ namespace PadelBooking.Core.Repositories
             _context = context;
         }
 
-        public Task AddAsync(Customer customer)
+        public async Task AddAsync(Customer customer)
         {
-            throw new NotImplementedException();
+            await _context.Customers.AddAsync(customer);
+            await _context.SaveChangesAsync();
         }
 
-        public Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
+
+            if(customer != null)
+            {
+                _context.Customers.Remove(customer);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public Task<List<Customer>> GetAllCustomersAsync()
+        public async Task<List<Customer>> GetAllCustomersAsync()
         {
-            throw new NotImplementedException();
+            return await _context.Customers.ToListAsync();
         }
 
-        public Task<Customer?> GetCustomerByIdAsync(int id)
+        public async Task<Customer?> GetCustomerByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public Task UpdateAsync(Customer customer)
+        public async Task UpdateAsync(Customer customer)
         {
-            throw new NotImplementedException();
+            _context.Customers.Update(customer);
+            await _context.SaveChangesAsync();
         }
     }
 }
