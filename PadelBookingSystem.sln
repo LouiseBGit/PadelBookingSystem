@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37111.16 d17.14
+VisualStudioVersion = 17.14.37111.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadelBooking.API", "PadelBooking.API\PadelBooking.API.csproj", "{9E4E0692-37E2-479F-A8A3-384B54C6D073}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadelBooking.Core", "PadelBooking.Core\PadelBooking.Core.csproj", "{25204213-87FE-4EB4-A0C0-9D59AED8E372}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PadelBooking.Tests", "PadelBooking.Tests\PadelBooking.Tests.csproj", "{7718A8EE-E831-40E4-A2BE-C82CDAE4206E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{25204213-87FE-4EB4-A0C0-9D59AED8E372}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25204213-87FE-4EB4-A0C0-9D59AED8E372}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25204213-87FE-4EB4-A0C0-9D59AED8E372}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7718A8EE-E831-40E4-A2BE-C82CDAE4206E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7718A8EE-E831-40E4-A2BE-C82CDAE4206E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7718A8EE-E831-40E4-A2BE-C82CDAE4206E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7718A8EE-E831-40E4-A2BE-C82CDAE4206E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
