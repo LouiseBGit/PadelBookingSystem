@@ -38,6 +38,11 @@ namespace PadelBooking.Core.Services
             {
                 return false;
             }
+            //regel om hel timma
+            if (booking.StartTime.Minute != 0)
+            {
+                return false;
+            }
             //regel om vilken bana
             if (booking.CourtNumber < 1 || booking.CourtNumber > 3)
             {
@@ -45,9 +50,16 @@ namespace PadelBooking.Core.Services
             }
             //regel om dubbelbokning (samma tid, samma bana)
             var bookings = await _repository.GetAllBookingsAsync();
-            //bool doubleBooking = booking.Any(b => b.CourtNumber == b.)
+            bool doubleBooking = bookings.Any(b =>
+            b.CourtNumber == booking.CourtNumber &&
+            b.StartTime == booking.StartTime
+            );
+            if (doubleBooking)
+            {
+                return false;
+            }
 
-            //spara
+            //spara om alla regler är ok
             await _repository.AddAsync(booking);
             return true;
         }
@@ -58,14 +70,28 @@ namespace PadelBooking.Core.Services
             {
                 return false;
             }
+
+            //regel om hel timma
+            if (booking.StartTime.Minute != 0)
+            {
+                return false;
+            }
             //regel om vilken bana
             if (booking.CourtNumber < 1 || booking.CourtNumber > 3)
             {
                 return false;
             }
-            //regel om dubbelbokning (samma tid, samma bana)
+            //regel om dubbelbokning (ignorerar den bokningen som ska ändras)
             var bookings = await _repository.GetAllBookingsAsync();
-            //bool doubleBooking = booking.Any(b => b.CourtNumber == b.)
+            bool doubleBooking = bookings.Any(b =>
+            b.Id == booking.Id &&
+            b.CourtNumber == booking.CourtNumber &&
+            b.StartTime == booking.StartTime
+            );
+            if (doubleBooking)
+            {
+                return false;
+            }
 
             await _repository.UpdateAsync(booking);
             return true;
