@@ -86,7 +86,8 @@ namespace PadelBooking.API.Controllers
             var booking = new Booking
             {
                 CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime
+                StartTime = dto.StartTime,
+                CustomerId = dto.CustomerId
             };
 
             //service hanterar reglerna
