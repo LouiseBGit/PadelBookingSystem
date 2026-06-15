@@ -49,11 +49,16 @@ namespace PadelBooking.Core.Services
                 return false;
             }
             //regel om dubbelbokning (samma tid, samma bana)
-            var bookings = await _repository.GetAllBookingsAsync();
-            bool doubleBooking = bookings.Any(b =>
-            b.CourtNumber == booking.CourtNumber &&
-            b.StartTime == booking.StartTime
-            );
+            //var bookings = await _repository.GetAllBookingsAsync();
+            //bool doubleBooking = bookings.Any(b =>
+            //b.CourtNumber == booking.CourtNumber &&
+            //b.StartTime == booking.StartTime
+            //);
+
+            var doubleBooking = await _repository.BookingExistsAsync(
+                booking.CourtNumber,
+                booking.StartTime);
+
             if (doubleBooking)
             {
                 return false;
@@ -83,11 +88,17 @@ namespace PadelBooking.Core.Services
             }
             //regel om dubbelbokning (ignorerar den bokningen som ska ändras)
             var bookings = await _repository.GetAllBookingsAsync();
+            //bool doubleBooking = bookings.Any(b =>
+            //b.Id == booking.Id &&
+            //b.CourtNumber == booking.CourtNumber &&
+            //b.StartTime == booking.StartTime
+            //);
             bool doubleBooking = bookings.Any(b =>
-            b.Id == booking.Id &&
+            b.Id != booking.Id &&
             b.CourtNumber == booking.CourtNumber &&
             b.StartTime == booking.StartTime
-            );
+            ); 
+
             if (doubleBooking)
             {
                 return false;
@@ -100,6 +111,11 @@ namespace PadelBooking.Core.Services
         {
             await _repository.DeleteAsync(id);
             return true;
+        }
+
+        public async Task<List<Booking>> GetBookingsByDateAsync(DateTime date)
+        {
+            return await _repository.GetBookingsByDateAsync(date);
         }
 
         

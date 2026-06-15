@@ -43,6 +43,8 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar true om borttagningen lyckades</returns>
         Task<bool> DeleteBookingAsync(int id);
 
+        Task<List<Booking>> GetBookingsByDateAsync(DateTime date);
+
 
     }
 }

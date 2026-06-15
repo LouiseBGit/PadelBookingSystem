@@ -43,5 +43,8 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="id"></param>
         Task DeleteAsync(int id);
 
+        Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime);
+
+        Task<List<Booking>> GetBookingsByDateAsync(DateTime date);
     }
 }

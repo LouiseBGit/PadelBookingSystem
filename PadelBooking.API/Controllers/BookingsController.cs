@@ -155,5 +155,20 @@ namespace PadelBooking.API.Controllers
             //200 OK och uppdaterar bokning
             return Ok(booking);
         }
+
+        [HttpGet("date/{date}")]
+        public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date)
+        {
+            var bookings = await _bookingService.GetBookingsByDateAsync(date);
+
+            var bookingDtos = bookings.Select(b => new BookingDto
+            {
+                Id = b.Id,
+                CourtNumber = b.CourtNumber,
+                StartTime = b.StartTime
+            }).ToList();
+
+            return Ok(bookingDtos);
+        }
     }
 }

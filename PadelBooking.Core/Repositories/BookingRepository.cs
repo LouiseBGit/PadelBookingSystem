@@ -69,5 +69,19 @@ namespace PadelBooking.Core.Repositories
             //spara uppdateringen
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime)
+        {
+            return await _context.Bookings.AnyAsync(b =>
+            b.CourtNumber == courtNumber &&
+            b.StartTime == startTime);
+            
+        }
+
+        public async Task<List<Booking>> GetBookingsByDateAsync(DateTime date)
+        {
+            return await _context.Bookings.Where(b => b.StartTime.Date == date.Date)
+                .ToListAsync();
+        }
     }
 }
