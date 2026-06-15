@@ -50,6 +50,11 @@ namespace PadelBooking.Core.Repositories
             return await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
         }
 
+        public async Task<Customer?> GetCustomerByEmailAsync(string email)
+        {
+            return await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+        }
+
         public async Task UpdateAsync(Customer customer)
         {
             _context.Customers.Update(customer);

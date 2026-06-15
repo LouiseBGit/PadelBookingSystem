@@ -27,6 +27,12 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar kund på specifikt ID, eller null om ingen kund finns</returns>
         Task<Customer?> GetCustomerByIdAsync(int id);
         /// <summary>
+        /// ta fram kunden med email
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<Customer?> GetCustomerByEmailAsync(string email);
+        /// <summary>
         /// lägg till kund
         /// </summary>
         /// <param name="customer"></param>

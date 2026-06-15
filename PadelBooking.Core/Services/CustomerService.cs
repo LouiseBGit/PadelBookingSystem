@@ -31,6 +31,15 @@ namespace PadelBooking.Core.Services
         /// <returns>true om kunden skapades</returns>
         public async Task<bool> CreateCustomerAsync(Customer customer)
         {
+            //kolla om kund redan finns
+            var exists = await _repository.GetCustomerByEmailAsync(customer.Email);
+
+            //stop om email redan finns, så inte samma kund kan läggas till flera gånger
+            if (exists != null)
+            {
+                return false;
+            }
+            //..annars spara
             await _repository.AddAsync(customer);
 
             return true;            
