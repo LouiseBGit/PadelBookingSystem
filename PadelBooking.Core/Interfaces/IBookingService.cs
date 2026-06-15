@@ -45,6 +45,6 @@ namespace PadelBooking.Core.Interfaces
 
         Task<List<Booking>> GetBookingsByDateAsync(DateTime date);
 
-
+        Task<List<int>> GetAvailableTimesAsync(DateTime date);
     }
 }

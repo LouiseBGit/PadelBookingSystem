@@ -117,7 +117,26 @@ namespace PadelBooking.Core.Services
         {
             return await _repository.GetBookingsByDateAsync(date);
         }
+        //visar lediga tider att kunna boka
+        public async Task<List<int>> GetAvailableTimesAsync(DateTime date)
+        {
+            var bookings = await _repository.GetBookingsByDateAsync(date);
 
+            var bookedHours = bookings
+                .Select(b => b.StartTime.Hour)
+                .ToList();
+
+            var availableHours = new List<int>();
+
+            for (int hour = 7; hour <= 22; hour++)
+            {
+                if (!bookedHours.Contains(hour))
+                {
+                    availableHours.Add(hour);
+                }
+            }
+            return availableHours;
+        }
         
     } 
 }

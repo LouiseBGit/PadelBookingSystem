@@ -77,7 +77,11 @@ namespace PadelBooking.Core.Repositories
             b.StartTime == startTime);
             
         }
-
+        /// <summary>
+        /// Hämtar alla bokningar för specifikt datum
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>lista med bokningar för specifik dag</returns>
         public async Task<List<Booking>> GetBookingsByDateAsync(DateTime date)
         {
             return await _context.Bookings.Where(b => b.StartTime.Date == date.Date)

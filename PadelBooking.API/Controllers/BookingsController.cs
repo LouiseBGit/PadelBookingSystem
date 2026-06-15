@@ -98,8 +98,15 @@ namespace PadelBooking.API.Controllers
                 return BadRequest("Bokning bryter mot reglerna");
             }
 
+            var resultDto = new BookingDto
+            {
+                Id = booking.Id,
+                CourtNumber = booking.CourtNumber,
+                StartTime = booking.StartTime
+            };
+
             //200 OK
-            return Ok("Bokning skapad");
+            return Ok(resultDto);
         }
 
         /// <summary>
@@ -152,11 +159,22 @@ namespace PadelBooking.API.Controllers
             {
                 return BadRequest("Uppdateringen misslyckades pga bruten regel"); 
             }
-            //200 OK och uppdaterar bokning
-            return Ok(booking);
-        }
 
-        [HttpGet("date/{date}")]
+            var resultDto = new BookingDto
+            {
+                Id = booking.Id,
+                CourtNumber = booking.CourtNumber,
+                StartTime = booking.StartTime
+            };
+            //200 OK och uppdaterar bokning
+            return Ok(resultDto);
+        }
+        /// <summary>
+        /// Hämtar alla bokningar för ett specifikt datum
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>Lista med alla bokningar för vald dag</returns>
+        [HttpGet("date")]
         public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date)
         {
             var bookings = await _bookingService.GetBookingsByDateAsync(date);
@@ -169,6 +187,18 @@ namespace PadelBooking.API.Controllers
             }).ToList();
 
             return Ok(bookingDtos);
+        }
+
+ /// <summary>
+ /// hämtar lediga tider för en specifik dag
+ /// </summary>
+ /// <param name="date"></param>
+ /// <returns>lista med lediga tider</returns>
+        [HttpGet("available")]
+        public async Task<ActionResult<List<int>>> GetAvailableTimes(DateTime date)
+        {
+            var result = await _bookingService.GetAvailableTimesAsync(date);
+            return Ok(result);
         }
     }
 }
