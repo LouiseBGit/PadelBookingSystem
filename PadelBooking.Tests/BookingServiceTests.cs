@@ -104,25 +104,14 @@ namespace PadelBooking.Tests
         public async Task CreateBooking_ShouldReturnFalse_WhenDoubleBooking()
         {
             //arrange
-            //gör en bokning
-            var existingBooking = new Booking
-            {
-                StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
-                CourtNumber = 1
-            };
-
             var mock = new Mock<IBookingRepository>();
 
-            //fejkar att databasen redan innehåller en bokning
-            mock.Setup(x => x.GetAllBookingsAsync())
-                .ReturnsAsync(new List<Booking>
-                {
-                    existingBooking
-                });
-            //skapar service-klassen
+            //säger att bokningen redan finns
+            mock.Setup(x => x.BookingExistsAsync(1, new DateTime(2026, 1, 1, 10, 0, 0)))
+                .ReturnsAsync(true);
+
             var service = new BookingService(mock.Object);
 
-            //försöker skapa en identisk bokning
             var booking = new Booking
             {
                 StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
@@ -135,6 +124,69 @@ namespace PadelBooking.Tests
             //assert
             Assert.IsFalse(result);
 
+
+            ////arrange
+            ////gör en bokning
+            //var existingBooking = new Booking
+            //{
+            //    StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+            //    CourtNumber = 1
+            //};
+
+            //var mock = new Mock<IBookingRepository>();
+
+            ////fejkar att databasen redan innehåller en bokning
+            //mock.Setup(x => x.GetAllBookingsAsync())
+            //    .ReturnsAsync(new List<Booking>
+            //    {
+            //        existingBooking
+            //    });
+            ////skapar service-klassen
+            //var service = new BookingService(mock.Object);
+
+            ////försöker skapa en identisk bokning
+            //var booking = new Booking
+            //{
+            //    StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+            //    CourtNumber = 1
+            //};
+
+            ////act
+            //var result = await service.CreateBookingAsync(booking);
+
+            ////assert
+            //Assert.IsFalse(result);
+
+        }
+
+        [TestMethod]
+        public async Task CreateBooing_ShouldReturnFalse_WhenCourtNumberIsInvalid()
+        {
+            //arrange
+            //skapar en mock av repository så vi slipper använda riktig databas
+            var mock = new Mock<IBookingRepository>();
+
+            //ställer in mocken så den inte hittar dubbelbokning
+            mock.Setup(x => x.BookingExistsAsync(0, new DateTime(2026, 1, 1, 10, 0, 0)))
+            .ReturnsAsync(false);
+
+            //skapar service-klassen och skickar in fejkad mock-repository
+            var service = new BookingService(mock.Object);
+
+            //skapar en bokning med ogiltig bana
+            var booking = new Booking
+            {
+                StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+                CourtNumber = 0
+            };
+
+            //act
+            //anropar metoden som ska testas
+            var result = await service.CreateBookingAsync(booking);
+
+            //assert
+            //förväntar false eftersom det är ett ogiltigt nummer
+            Assert.IsFalse(result);
         }
 
 

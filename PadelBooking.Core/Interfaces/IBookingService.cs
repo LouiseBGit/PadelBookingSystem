@@ -43,7 +43,7 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar true om borttagningen lyckades</returns>
         Task<bool> DeleteBookingAsync(int id);
 
-        Task<List<Booking>> GetBookingsByDateAsync(DateTime date);
+        Task<List<Booking>> GetBookingsByDatesAsync(DateTime date);
 
         Task<List<int>> GetAvailableTimesAsync(DateTime date);
         /// <summary>
@@ -52,6 +52,6 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        Task<List<Booking>> GetBookingBetweenDatesAsync(DateTime startDate, DateTime endDate);
+        Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
     }
 }

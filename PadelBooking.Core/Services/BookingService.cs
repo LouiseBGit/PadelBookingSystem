@@ -113,7 +113,7 @@ namespace PadelBooking.Core.Services
             return true;
         }
 
-        public async Task<List<Booking>> GetBookingsByDateAsync(DateTime date)
+        public async Task<List<Booking>> GetBookingsByDatesAsync(DateTime date)
         {
             return await _repository.GetBookingsByDateAsync(date);
         }
@@ -144,7 +144,7 @@ namespace PadelBooking.Core.Services
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        public async Task<List<Booking>> GetBookingsBetweenDateAsync(DateTime startDate, DateTime endDate)
+        public async Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
         {
             return await _repository.GetBookingsBetweenDatesAsync(startDate, endDate);
         }

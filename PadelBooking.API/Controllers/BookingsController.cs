@@ -177,7 +177,7 @@ namespace PadelBooking.API.Controllers
         [HttpGet("date")]
         public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date)
         {
-            var bookings = await _bookingService.GetBookingsByDateAsync(date);
+            var bookings = await _bookingService.GetBookingsByDatesAsync(date);
 
             var bookingDtos = bookings.Select(b => new BookingDto
             {
@@ -189,11 +189,11 @@ namespace PadelBooking.API.Controllers
             return Ok(bookingDtos);
         }
 
- /// <summary>
- /// hämtar lediga tider för en specifik dag
- /// </summary>
- /// <param name="date"></param>
- /// <returns>lista med lediga tider</returns>
+        /// <summary>
+        /// hämtar lediga tider för specifik dag
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
         [HttpGet("available")]
         public async Task<ActionResult<List<int>>> GetAvailableTimes(DateTime date)
         {
@@ -211,7 +211,7 @@ namespace PadelBooking.API.Controllers
         public async Task<ActionResult<List<BookingDto>>> GetBookingsBetweenDates(DateTime startDate, DateTime endDate)
         {
             var bookings = await _bookingService
-                .GetBookingBetweenDatesAsync(startDate, endDate);
+                .GetBookingsBetweenDatesAsync(startDate, endDate);
 
             var bookingDto = bookings.Select(b => new BookingDto
             {
