@@ -200,5 +200,27 @@ namespace PadelBooking.API.Controllers
             var result = await _bookingService.GetAvailableTimesAsync(date);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Alla bokningar mellan specifika datum
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns>Lista med bokningar mellan specifika datum</returns>
+        [HttpGet("between")]
+        public async Task<ActionResult<List<BookingDto>>> GetBookingsBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            var bookings = await _bookingService
+                .GetBookingBetweenDatesAsync(startDate, endDate);
+
+            var bookingDto = bookings.Select(b => new BookingDto
+            {
+                Id = b.Id,
+                CourtNumber = b.CourtNumber,
+                StartTime = b.StartTime
+            }).ToList();
+
+            return Ok(bookingDto);
+        }
     }
 }

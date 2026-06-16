@@ -137,6 +137,17 @@ namespace PadelBooking.Core.Services
             }
             return availableHours;
         }
+
+        /// <summary>
+        /// ger bokningar mellan två specifika datum
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        public async Task<List<Booking>> GetBookingsBetweenDateAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _repository.GetBookingsBetweenDatesAsync(startDate, endDate);
+        }
         
     } 
 }

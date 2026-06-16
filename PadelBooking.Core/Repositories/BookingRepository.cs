@@ -87,5 +87,18 @@ namespace PadelBooking.Core.Repositories
             return await _context.Bookings.Where(b => b.StartTime.Date == date.Date)
                 .ToListAsync();
         }
+        /// <summary>
+        /// Hämtar bokningar mellan två specifika datum 
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        public async Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Bookings
+                .Where(b => b.StartTime >= startDate &&
+                b.StartTime <= endDate)
+                .ToListAsync();
+        }
     }
 }
