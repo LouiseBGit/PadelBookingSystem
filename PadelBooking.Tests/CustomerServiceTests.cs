@@ -135,6 +135,113 @@ namespace PadelBooking.Tests
             //kollar så att kunden inte får skapas
             Assert.IsFalse(result);
         }
+
+        [TestMethod]
+        public async Task GetCustomerById_ShouldReturnCustomer_WhenCustomerExists()
+        {
+            //arrange
+            var customer = new Customer
+            {
+                Id = 1,
+                FirstName = "Lisa",
+                LastName = "Grön",
+                Email = "lg@test.nu"
+            };
+
+            var mock = new Mock<ICustomerRepository>();
+
+            //låtsar att kunden finns
+            mock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(customer);
+
+            var service = new CustomerService(mock.Object);
+
+            //act
+            var result = await service.GetCustomerByIdAsync(1);
+
+            //assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Id);
+            Assert.AreEqual("Lisa", result.FirstName);
+        }
+
+        /// <summary>
+        /// testar att en lista med alla kunder returneras 
+        /// </summary>
+        [TestMethod]
+        public async Task GetAllCustomers_ShouldReturnListOfCustomers()
+        {
+            //arrange
+            //skapar lista som repository ska returnera
+            var customerList = new List<Customer>
+            {
+                new Customer
+                {
+                    Id = 1,
+                    FirstName = "Anna"
+                },
+                new Customer
+                {
+                    Id = 2,
+                    FirstName = "Lasse"
+                }
+            };
+
+            var mock = new Mock<ICustomerRepository>();
+
+            //låtsas att databasen innehåller två kunder
+            mock.Setup(x => x.GetAllCustomersAsync())
+                .ReturnsAsync(customerList);
+
+            //skapar service-klassen
+            var service = new CustomerService(mock.Object);
+
+            //act
+            var result = await service.GetAllCustomerAsync();
+
+            //assert
+            //kollar att listan inte är tom
+            Assert.IsNotNull(result);
+
+            //kollar att två kunder kan returneras
+            Assert.AreEqual(2, result.Count);
+
+            //kollar första kunden
+            Assert.AreEqual("Anna", result[0].FirstName);
+
+            //kollar andra kunden
+            Assert.AreEqual("Lasse", result[1].FirstName);
+        }
+
+        [TestMethod]
+        public async Task UpdateCustomer_ShouldReturnTrue_WhenCustomerIsUpdated()
+        {
+            //arrange
+            var customer = new Customer
+            {
+                Id = 1,
+                FirstName = "Anton",
+                LastName = "Andersson",
+                Email = "aa@mail.nu"
+            };
+
+            //skapar en mock av repository
+            var mock = new Mock<ICustomerRepository>();
+
+            //säger att UpdateAsync fungerar med just denna kund
+            mock.Setup(x => x.UpdateAsync(customer))
+                .Returns(Task.CompletedTask);
+
+            var service = new CustomerService(mock.Object);
+
+            //act
+            var result = await service.UpdateCustomerAsync(customer);
+
+            //assert
+            Assert.IsTrue(result);
+        }
+
+        
     }
 
 }
