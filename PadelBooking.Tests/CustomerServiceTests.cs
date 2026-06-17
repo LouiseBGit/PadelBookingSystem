@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
+using Moq;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 using PadelBooking.Core.Services;
@@ -9,6 +10,9 @@ namespace PadelBooking.Tests
     [TestClass]
     public class CustomerServiceTests
     {
+        /// <summary>
+        /// testar att en giltig kund kan läggas till 
+        /// </summary>
         [TestMethod]
         public async Task CreateCustomer_ShouldReturnTrue_WhenValidCustomer()
         {
@@ -36,6 +40,10 @@ namespace PadelBooking.Tests
             Assert.IsTrue(result);
 
         }
+
+        /// <summary>
+        /// testar att en existerande kund kan raderas
+        /// </summary>
         [TestMethod]
         public async Task DeleteCustomer_ShouldReturnTrue_WhenCustomerExists()
         {
@@ -66,7 +74,9 @@ namespace PadelBooking.Tests
             //förväntar att delete funkar (true)
             Assert.IsTrue(result);
         }
-
+        /// <summary>
+        /// testar att det inte går att ta bort en kund som inte finns
+        /// </summary>
         [TestMethod]
         public async Task DeleteCustomer_ShouldReturnFalse_WhenCustomerDoesNotExist()
         {
@@ -83,6 +93,46 @@ namespace PadelBooking.Tests
 
             //assert
             //förväntas att kunden inte finns (false)
+            Assert.IsFalse(result);
+        }
+        /// <summary>
+        /// testar att det inte går att lägga in kunder med samma email
+        /// </summary>
+        [TestMethod]
+        public async Task CreateCustomer_ShouldReturnFalse_WhenEmailAlreadyExists()
+        {
+            //arrange
+            //skapar en kund
+            var existingCustomer = new Customer
+            {
+                Id = 1,
+                FirstName = "Elof",
+                LastName = "Björn",
+                Email = "elbrum@testis.se"
+            };
+
+            var mock = new Mock<ICustomerRepository>();
+
+            //låtsar att epost-adressen redan finns i databasen
+            mock.Setup(x => x.GetCustomerByEmailAsync("elbrum@testis.se"))
+                .ReturnsAsync(existingCustomer);
+
+            var service = new CustomerService(mock.Object);
+
+            //försöker skapa en kund med samma epost
+            var customer = new Customer
+            {
+                FirstName = "Frida",
+                LastName = "Björk",
+                Email = "elbrum@testis.se"
+            };
+
+            //act
+            //anropar metoden som ska testas
+            var result = await service.CreateCustomerAsync(customer);
+
+            //assert
+            //kollar så att kunden inte får skapas
             Assert.IsFalse(result);
         }
     }
