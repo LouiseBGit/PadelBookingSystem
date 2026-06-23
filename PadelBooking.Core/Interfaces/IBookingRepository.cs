@@ -48,7 +48,7 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="courtNumber"></param>
         /// <param name="startTime"></param>
         /// <returns></returns>
-        Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime);
+        Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime, int? excludeId = null);
         /// <summary>
         /// bokningar för en viss dag
         /// </summary>

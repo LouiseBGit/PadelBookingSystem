@@ -70,11 +70,12 @@ namespace PadelBooking.Core.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime)
+        public async Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime, int? excludeId = null)
         {
             return await _context.Bookings.AnyAsync(b =>
             b.CourtNumber == courtNumber &&
-            b.StartTime == startTime);
+            b.StartTime == startTime &&
+            (!excludeId.HasValue || b.Id != excludeId));
             
         }
         /// <summary>

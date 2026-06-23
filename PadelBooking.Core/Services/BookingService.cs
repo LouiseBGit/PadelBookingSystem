@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using PadelBooking.Core.DTOs;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 
@@ -21,20 +22,41 @@ namespace PadelBooking.Core.Services
             _repository = repository;
         }
 
-        public async Task<List<Booking>> GetAllBookingsAsync()
+        public async Task<List<BookingDto>> GetAllBookingsAsync()
         {
-            return await _repository.GetAllBookingsAsync();
+            //return await _repository.GetAllBookingsAsync();
+            var bookings = await _repository.GetAllBookingsAsync();
+
+            return bookings.Select(b => new BookingDto
+            {
+                Id = b.Id,
+                CourtNumber = b.CourtNumber,
+                StartTime = b.StartTime
+            }).ToList();
+            
         }
 
-        public async Task<Booking?> GetBookingByIdAsync(int id)
+        public async Task<BookingDto?> GetBookingByIdAsync(int id)
         {
-            return await _repository.GetBookingByIdAsync(id);
+            var booking = await _repository.GetBookingByIdAsync(id);
+
+            if (booking == null)
+            {
+                return null;
+            }
+
+            return new BookingDto
+            {
+                Id = booking.Id,
+                CourtNumber = booking.CourtNumber,
+                StartTime = booking.StartTime
+            };
         }
 
         public async Task<bool> CreateBookingAsync(Booking booking)
         {
             //regel om tid
-            if (booking.StartTime.Hour < 7 || booking.StartTime.Hour > 22)
+            if (booking.StartTime.Hour < 7 || booking.StartTime.Hour >= 22)
             {
                 return false;
             }
@@ -71,7 +93,7 @@ namespace PadelBooking.Core.Services
         public async Task<bool> UpdateBookingAsync(Booking booking)
         {
             //regel om tid
-            if (booking.StartTime.Hour < 7 || booking.StartTime.Hour > 22)
+            if (booking.StartTime.Hour < 7 || booking.StartTime.Hour >= 22)
             {
                 return false;
             }
@@ -86,18 +108,24 @@ namespace PadelBooking.Core.Services
             {
                 return false;
             }
-            //regel om dubbelbokning (ignorerar den bokningen som ska ändras)
-            var bookings = await _repository.GetAllBookingsAsync();
+
+            var doubleBooking = await _repository.BookingExistsAsync(
+                booking.CourtNumber,
+                booking.StartTime,
+                booking.Id);
+
+            ////regel om dubbelbokning (ignorerar den bokningen som ska ändras)
+            //var bookings = await _repository.GetAllBookingsAsync();
+            ////bool doubleBooking = bookings.Any(b =>
+            ////b.Id == booking.Id &&
+            ////b.CourtNumber == booking.CourtNumber &&
+            ////b.StartTime == booking.StartTime
+            ////);
             //bool doubleBooking = bookings.Any(b =>
-            //b.Id == booking.Id &&
+            //b.Id != booking.Id &&
             //b.CourtNumber == booking.CourtNumber &&
             //b.StartTime == booking.StartTime
-            //);
-            bool doubleBooking = bookings.Any(b =>
-            b.Id != booking.Id &&
-            b.CourtNumber == booking.CourtNumber &&
-            b.StartTime == booking.StartTime
-            ); 
+            //); 
 
             if (doubleBooking)
             {
@@ -113,9 +141,16 @@ namespace PadelBooking.Core.Services
             return true;
         }
 
-        public async Task<List<Booking>> GetBookingsByDatesAsync(DateTime date)
+        public async Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date)
         {
-            return await _repository.GetBookingsByDateAsync(date);
+            var bookings = await _repository.GetBookingsByDateAsync(date);
+
+            return bookings.Select(b => new BookingDto
+            {
+                Id = b.Id,
+                CourtNumber = b.CourtNumber,
+                StartTime = b.StartTime
+            }).ToList();
         }
         //visar lediga tider att kunna boka
         public async Task<List<int>> GetAvailableTimesAsync(DateTime date)
@@ -144,9 +179,16 @@ namespace PadelBooking.Core.Services
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        public async Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
+        public async Task<List<BookingDto>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
         {
-            return await _repository.GetBookingsBetweenDatesAsync(startDate, endDate);
+            var bookings = await _repository.GetBookingsBetweenDatesAsync(startDate, endDate);
+
+            return bookings.Select(b => new BookingDto
+            {
+                Id = b.Id,
+                CourtNumber = b.CourtNumber,
+                StartTime = b.StartTime
+            }).ToList();
         }
         
     } 

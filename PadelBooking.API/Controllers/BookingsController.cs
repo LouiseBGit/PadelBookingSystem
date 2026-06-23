@@ -38,16 +38,17 @@ namespace PadelBooking.API.Controllers
             //hämtar alla bokningar från service
             var bookings = await _bookingService.GetAllBookingsAsync();
 
-            //mapping -entity till DTO
-            var bookingDtos = bookings.Select(b => new BookingDto
-            {
-                Id = b.Id,
-                CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
-            }).ToList();
+            return Ok(bookings);
+            ////mapping -entity till DTO
+            //var bookingDtos = bookings.Select(b => new BookingDto
+            //{
+            //    Id = b.Id,
+            //    CourtNumber = b.CourtNumber,
+            //    StartTime = b.StartTime
+            //}).ToList();
 
-            //returnerar JSON-data
-            return Ok(bookingDtos);
+            ////returnerar JSON-data
+            //return Ok(bookingDtos);
         }
         /// <summary>
         /// hämtar specifik bokning baserat på ID
@@ -195,7 +196,7 @@ namespace PadelBooking.API.Controllers
         /// <param name="date"></param>
         /// <returns></returns>
         [HttpGet("available")]
-        public async Task<ActionResult<List<int>>> GetAvailableTimes(DateTime date)
+        public async Task<ActionResult<List<int>>> GetAvailableTimes([FromQuery] DateTime date)
         {
             var result = await _bookingService.GetAvailableTimesAsync(date);
             return Ok(result);

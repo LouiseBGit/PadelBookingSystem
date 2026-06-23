@@ -20,7 +20,7 @@ namespace PadelBooking.Tests
         {
             //arrange
             //skapar en bokning
-            var booking = new Booking
+            var booking = new BookingDto
             {
                 Id = 1,
                 CourtNumber = 2,
@@ -52,7 +52,7 @@ namespace PadelBooking.Tests
 
             //låtsa att bokning inte finns
             mock.Setup(x => x.GetBookingByIdAsync(1))
-                .ReturnsAsync((Booking?)null);
+                .ReturnsAsync((BookingDto?)null);
 
             var controller = new BookingsController(mock.Object);
 
@@ -129,7 +129,7 @@ namespace PadelBooking.Tests
             var mock = new Mock<IBookingService>();
 
             mock.Setup(x => x.GetBookingByIdAsync(1))
-                .ReturnsAsync((Booking?)null);
+                .ReturnsAsync((BookingDto?)null);
 
             var controller = new BookingsController(mock.Object);
 

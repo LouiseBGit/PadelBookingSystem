@@ -116,7 +116,7 @@ namespace PadelBooking.Tests
             var mock = new Mock<IBookingRepository>();
 
             //säger att bokningen redan finns
-            mock.Setup(x => x.BookingExistsAsync(1, new DateTime(2026, 1, 1, 10, 0, 0)))
+            mock.Setup(x => x.BookingExistsAsync(1, new DateTime(2026, 1, 1, 10, 0, 0), It.IsAny<int?>()))
                 .ReturnsAsync(true);
 
             var service = new BookingService(mock.Object);
@@ -124,6 +124,7 @@ namespace PadelBooking.Tests
             //försöker lägga in samma bokning igen
             var booking = new Booking
             {
+                Id = 1,
                 StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
                 CourtNumber = 1
             };
@@ -179,17 +180,20 @@ namespace PadelBooking.Tests
             //mockar repository så vi inte använder riktig data
             var mock = new Mock<IBookingRepository>();
 
-            //fejkar att det redan finns en bokning
-            mock.Setup(x => x.GetAllBookingsAsync())
-                .ReturnsAsync(new List<Booking>
-                {
-                    new Booking
-                    {
-                        Id = 2,
-                        CourtNumber = 1,
-                        StartTime = new DateTime(2026, 1, 1, 10, 0, 0)
-                    }
-                });
+            mock.Setup(x => x.BookingExistsAsync(1, new DateTime(2026, 1, 1, 10, 0, 0), 1))
+                .ReturnsAsync(true);
+
+            ////fejkar att det redan finns en bokning
+            //mock.Setup(x => x.GetAllBookingsAsync())
+            //    .ReturnsAsync(new List<Booking>
+            //    {
+            //        new Booking
+            //        {
+            //            Id = 2,
+            //            CourtNumber = 1,
+            //            StartTime = new DateTime(2026, 1, 1, 10, 0, 0)
+            //        }
+            //    });
 
             var service = new BookingService(mock.Object);
 
@@ -216,9 +220,9 @@ namespace PadelBooking.Tests
             //skapar en mock av repository så vi slipper använda riktig databas
             var mock = new Mock<IBookingRepository>();
 
-            //ställer in mocken så den inte hittar dubbelbokning
-            mock.Setup(x => x.BookingExistsAsync(0, new DateTime(2026, 1, 1, 10, 0, 0)))
-            .ReturnsAsync(false);
+            ////ställer in mocken så den inte hittar dubbelbokning
+            //mock.Setup(x => x.BookingExistsAsync(0, new DateTime(2026, 1, 1, 10, 0, 0), null))
+            //.ReturnsAsync(false);
 
             //skapar service-klassen och skickar in fejkad mock-repository
             var service = new BookingService(mock.Object);

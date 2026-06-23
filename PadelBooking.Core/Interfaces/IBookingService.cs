@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PadelBooking.Core.Models;
+using PadelBooking.Core.DTOs;
 
 namespace PadelBooking.Core.Interfaces
 {
@@ -17,13 +18,13 @@ namespace PadelBooking.Core.Interfaces
         /// hämtar alla bokningar asynkront
         /// </summary>
         /// <returns>lista med bokningar</returns>
-        Task<List<Booking>> GetAllBookingsAsync();
+        Task<List<BookingDto>> GetAllBookingsAsync();
         /// <summary>
         /// hämtar en specifik bokning, asynkront, baserat på ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns>bokning om den finns, annars null</returns>
-        Task<Booking?> GetBookingByIdAsync(int id);
+        Task<BookingDto?> GetBookingByIdAsync(int id);
         /// <summary>
         /// skapar en ny bokning
         /// </summary>
@@ -43,7 +44,7 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar true om borttagningen lyckades</returns>
         Task<bool> DeleteBookingAsync(int id);
 
-        Task<List<Booking>> GetBookingsByDatesAsync(DateTime date);
+        Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date);
 
         Task<List<int>> GetAvailableTimesAsync(DateTime date);
         /// <summary>
@@ -52,6 +53,6 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
+        Task<List<BookingDto>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
     }
 }
