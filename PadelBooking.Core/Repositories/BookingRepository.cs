@@ -54,7 +54,9 @@ namespace PadelBooking.Core.Repositories
         {
             //tar tabellen bookings i databasen som returneras som en lista
             //await = väntar på databasen men utan att blockera programmet
-            return await _context.Bookings.ToListAsync();
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .ToListAsync();
         }
         //hämtar en bokning för det ID man skickar in
         public async Task<Booking?> GetBookingByIdAsync(int id)
@@ -68,6 +70,44 @@ namespace PadelBooking.Core.Repositories
             _context.Bookings.Update(booking);
             //spara uppdateringen
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime, int? excludeId = null)
+        {
+            return await _context.Bookings.AnyAsync(b =>
+            b.CourtNumber == courtNumber &&
+            b.StartTime == startTime &&
+            (!excludeId.HasValue || b.Id != excludeId));
+            
+        }
+        /// <summary>
+        /// Hämtar alla bokningar för specifikt datum
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns>lista med bokningar för specifik dag</returns>
+        public async Task<List<Booking>> GetBookingsByDateAsync(DateTime date)
+        {
+            return await _context.Bookings.Where(b => b.StartTime.Date == date.Date)
+                .ToListAsync();
+        }
+        /// <summary>
+        /// Hämtar bokningar mellan två specifika datum 
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        public async Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Bookings
+                .Where(b => b.StartTime >= startDate &&
+                b.StartTime <= endDate)
+                .ToListAsync();
+        }
+        public async Task<List<Booking>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber)
+        {
+            return await _context.Bookings
+                .Where(b => b.StartTime.Date == date.Date && b.CourtNumber == courtNumber)
+                .ToListAsync();
         }
     }
 }
