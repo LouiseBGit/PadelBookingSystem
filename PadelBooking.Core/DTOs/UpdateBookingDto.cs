@@ -18,5 +18,6 @@ namespace PadelBooking.Core.DTOs
         //den nya starttiden för bokningen
         [Required(ErrorMessage = "Starttid måste anges")]
         public DateTime StartTime { get; set; }
+        public int CustomerId { get; set; }
     }
 }

@@ -17,5 +17,7 @@ namespace PadelBooking.Core.DTOs
         public int CourtNumber { get; set; }
         //starttiden för bokningen
         public DateTime StartTime { get; set; }
+        //för att visa även kundens namn i bokningen
+        public string CustomerName { get; set; } = string.Empty;
     }
 }

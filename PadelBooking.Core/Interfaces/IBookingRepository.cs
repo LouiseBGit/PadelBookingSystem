@@ -62,5 +62,7 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="endDate"></param>
         /// <returns></returns>
         Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
+
+        Task<List<Booking>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber);
     }
 }

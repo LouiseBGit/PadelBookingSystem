@@ -54,7 +54,9 @@ namespace PadelBooking.Core.Repositories
         {
             //tar tabellen bookings i databasen som returneras som en lista
             //await = väntar på databasen men utan att blockera programmet
-            return await _context.Bookings.ToListAsync();
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .ToListAsync();
         }
         //hämtar en bokning för det ID man skickar in
         public async Task<Booking?> GetBookingByIdAsync(int id)
@@ -99,6 +101,12 @@ namespace PadelBooking.Core.Repositories
             return await _context.Bookings
                 .Where(b => b.StartTime >= startDate &&
                 b.StartTime <= endDate)
+                .ToListAsync();
+        }
+        public async Task<List<Booking>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber)
+        {
+            return await _context.Bookings
+                .Where(b => b.StartTime.Date == date.Date && b.CourtNumber == courtNumber)
                 .ToListAsync();
         }
     }

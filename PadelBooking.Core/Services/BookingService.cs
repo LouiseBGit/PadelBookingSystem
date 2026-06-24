@@ -24,14 +24,15 @@ namespace PadelBooking.Core.Services
 
         public async Task<List<BookingDto>> GetAllBookingsAsync()
         {
-            //return await _repository.GetAllBookingsAsync();
+            
             var bookings = await _repository.GetAllBookingsAsync();
 
             return bookings.Select(b => new BookingDto
             {
                 Id = b.Id,
                 CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
+                StartTime = b.StartTime,
+                CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
             }).ToList();
             
         }
@@ -163,7 +164,7 @@ namespace PadelBooking.Core.Services
 
             var availableHours = new List<int>();
 
-            for (int hour = 7; hour <= 22; hour++)
+            for (int hour = 7; hour < 22; hour++)
             {
                 if (!bookedHours.Contains(hour))
                 {
@@ -189,6 +190,20 @@ namespace PadelBooking.Core.Services
                 CourtNumber = b.CourtNumber,
                 StartTime = b.StartTime
             }).ToList();
+        }
+
+        public async Task<List<BookingDto>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber)
+        {
+            var bookings = await _repository.GetBookingsByDateAndCourtAsync(date, courtNumber);
+
+            return bookings
+                .Select(b => new BookingDto
+                {
+                    Id = b.Id,
+                    CourtNumber = b.CourtNumber,
+                    StartTime = b.StartTime
+                })
+                .ToList();
         }
         
     } 

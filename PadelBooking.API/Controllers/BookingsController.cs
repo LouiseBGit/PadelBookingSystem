@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 using PadelBooking.Core.DTOs;
+using Microsoft.Identity.Client;
 
 namespace PadelBooking.API.Controllers
 {
@@ -133,7 +134,7 @@ namespace PadelBooking.API.Controllers
                 return BadRequest("Kunde inte ta bort bokningen");
             }
 
-            return Ok();
+            return Ok("Bokning borttagen");
 
         }
         /// <summary>
@@ -150,7 +151,8 @@ namespace PadelBooking.API.Controllers
             {
                 Id = id,
                 CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime
+                StartTime = dto.StartTime,
+                CustomerId = dto.CustomerId
             };
 
             //service kontrollerar regler innan uppdatering görs
@@ -168,7 +170,7 @@ namespace PadelBooking.API.Controllers
                 StartTime = booking.StartTime
             };
             //200 OK och uppdaterar bokning
-            return Ok(resultDto);
+            return Ok("Bokning uppdaterad");
         }
         /// <summary>
         /// Hämtar alla bokningar för ett specifikt datum
@@ -222,6 +224,14 @@ namespace PadelBooking.API.Controllers
             }).ToList();
 
             return Ok(bookingDto);
+        }
+
+        [HttpGet("date/court")]
+        public async Task<ActionResult<List<BookingDto>>> GetByDateAndCourt([FromQuery] DateTime date, [FromQuery] int courtNumber)
+        {
+            var bookings = await _bookingService.GetBookingsByDateAndCourtAsync(date, courtNumber);
+
+            return Ok(bookings);
         }
     }
 }

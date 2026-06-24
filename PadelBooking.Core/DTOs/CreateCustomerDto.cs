@@ -12,9 +12,11 @@ namespace PadelBooking.Core.DTOs
     /// </summary>
     public class CreateCustomerDto
     {
-        [Required]
+        [Required(ErrorMessage = "Ange förnamn")]
+        [StringLength(50, MinimumLength = 2)]
         public string FirstName { get; set; } = string.Empty;
-        [Required]
+        [Required(ErrorMessage = "Ange efternamn")]
+        [StringLength(50, MinimumLength = 2)]
         public string LastName { get; set; } = string.Empty;
         [Required]
         [Phone]
