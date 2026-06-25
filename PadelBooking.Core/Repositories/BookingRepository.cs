@@ -62,7 +62,9 @@ namespace PadelBooking.Core.Repositories
         public async Task<Booking?> GetBookingByIdAsync(int id)
         {
             //returnera första raden som stämmer överrens, annars null
-            return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .FirstOrDefaultAsync(b => b.Id == id);
         }
         //uppdaterar en redan existerande bokning i databasen
         public async Task UpdateAsync(Booking booking)
@@ -71,7 +73,13 @@ namespace PadelBooking.Core.Repositories
             //spara uppdateringen
             await _context.SaveChangesAsync();
         }
-
+        /// <summary>
+        /// kontrollerar om det redan finns en likadan bokning
+        /// </summary>
+        /// <param name="courtNumber"></param>
+        /// <param name="startTime"></param>
+        /// <param name="excludeId"></param>
+        /// <returns></returns>
         public async Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime, int? excludeId = null)
         {
             return await _context.Bookings.AnyAsync(b =>
@@ -103,6 +111,12 @@ namespace PadelBooking.Core.Repositories
                 b.StartTime <= endDate)
                 .ToListAsync();
         }
+        /// <summary>
+        /// hämtar alla bokningar för en specifik dag och bana
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="courtNumber"></param>
+        /// <returns></returns>
         public async Task<List<Booking>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber)
         {
             return await _context.Bookings
