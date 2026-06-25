@@ -1,13 +1,16 @@
 PadelBooking är ett REST-API för ett bokningssystem till en padelhall med tre banor. Detta system används för att hantera kunder och bokningar.
 SYSTEMETS FUNKTIONALITET:
 -skapa kunder
--se alla kunder
+-hämta alla kunder
 -uppdatera kunder
 -ta bort kunder
 -skapa bokningar
-- se bokningar
+- hämta bokningar
 - ta bort bokningar
 - uppdatera bokningar
+- visa bokningar för specifikt datum och bana
+- visa bokningar mellan start- och slutdatum
+- visa lediga tider för specifik dag
 .................
 
 SYSTEMETS REGLER:
@@ -15,6 +18,7 @@ SYSTEMETS REGLER:
 -bokningar måste vara hela timmar
 -inga dubbelbokningar
 -endast 3 banor
+-samma epost får inte registreras på olika kunder
 ..................
 
 ARKITEKTUR:
@@ -24,7 +28,7 @@ API
 
 CORE
 -models: Booking och Customer
--logik: regler för bokningar
+-service: logik (regler)
 -repository och interface
 
 TEST
@@ -37,6 +41,9 @@ postman --> Controller --> Service --> Repository --> Database
 .................
 
 TEST:
+-services
+-controllers
+-repositories
 Enhetstester visar:
 -bokningar fungerar som de ska
 -fel tider godkänns inte
@@ -48,13 +55,28 @@ Moq används för att simulera databasen så inte den riktiga datan avänds i te
 API-endpoints:
 Booking:
 -GET/api/bookings
+-GEt/api/bookings/{id}
 -POST/api/bookings
 -PUT/api/bookings/{id}
 -DELETE/api/bookings/{id}
+-GET /api/bookings/date
+-GET /api/bookings/between
+-GET /api/bookings/available
+-GET /api/bookings/date-and-court
 Customer:
 -GET/api/customers
+-GET /api/customers/{id}
 -POST/api/customers
 -PUT/api/customers/{id}
 -DEÖETE/api/customers/{id}
 
--
+Projektet använder SQL server och Entity Framework Core
+
+RELATIONER:
+En kund kan ha flera bokningar (one-to-many)
+
+Dependency Injection används för att koppla ihop repository, services, controllers.
+
+FLÖDE:
+Klient --> Controller --> Service --> Repository --> Database
+-svaret skickas tillbaka samma väg.
