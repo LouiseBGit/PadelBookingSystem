@@ -136,7 +136,8 @@ namespace PadelBooking.Core.Services
             {
                 Id = b.Id,
                 CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
+                StartTime = b.StartTime,
+                CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
             }).ToList();
         }
         //visar lediga tider att kunna boka
@@ -176,7 +177,8 @@ namespace PadelBooking.Core.Services
             {
                 Id = b.Id,
                 CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
+                StartTime = b.StartTime,
+                CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
             }).ToList();
         }
 
@@ -189,7 +191,8 @@ namespace PadelBooking.Core.Services
                 {
                     Id = b.Id,
                     CourtNumber = b.CourtNumber,
-                    StartTime = b.StartTime
+                    StartTime = b.StartTime,
+                    CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
                 })
                 .ToList();
         }

@@ -4,6 +4,7 @@ using PadelBooking.Core.Models;
 using PadelBooking.Core.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.Cryptography.Xml;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PadelBooking.Tests;
 
@@ -31,7 +32,7 @@ public class BookingRepositoryTests
         using var context = new AppDbContext(_options);
         //testar riktig EF
         var repository = new BookingRepository(context);
-
+        //skapar test-bokning
         var booking = new Booking
         {
             CourtNumber = 1,
@@ -40,9 +41,11 @@ public class BookingRepositoryTests
         };
 
         //act
+        //lägga till bokning i databasen
         await repository.AddAsync(booking);
 
         //assert
+        //kontrollera att den sparades
         using var assertContext = new AppDbContext(_options);
 
         //kollar att databasen fick data
@@ -55,9 +58,10 @@ public class BookingRepositoryTests
     public async Task DeleteAsync_ShouldRemoveBookingFromDatabase()
     {
         //arrange
+        //skapa context och repository
         using var context = new AppDbContext(_options);
         var repository = new BookingRepository(context);
-
+        //lägger in en bokning som ska tas bort
         var booking = new Booking
         {
             CourtNumber = 1,
@@ -68,9 +72,11 @@ public class BookingRepositoryTests
         await repository.AddAsync(booking);
 
         //act
+        //ta bort bokning
         await repository.DeleteAsync(booking.Id);
 
         //assert
+        //kontrollera att databasen är tom
         using var assertContext = new AppDbContext(_options);
 
         var count = await assertContext.Bookings.CountAsync();
@@ -82,9 +88,11 @@ public class BookingRepositoryTests
     [TestMethod]
     public async Task BookingExistsAsync_ShouldReturnTrue_WhenBookingExists()
     {
+        //arrange
+        //skapar context och repository
         using var context = new AppDbContext(_options);
         var repository = new BookingRepository(context);
-
+        //lägger in en bokning direkt i databasen
         await context.Bookings.AddAsync(new Booking
         {
             CourtNumber = 1,
@@ -92,12 +100,15 @@ public class BookingRepositoryTests
         });
 
         await context.SaveChangesAsync();
-
+        //act
+        //kontrollerar om bokning finns
         var exists = await repository.BookingExistsAsync(
             1,
             new DateTime(2026, 1, 1, 10, 0, 0)
         );
 
+        //assert
+        //ska vara true eftersom bokning finns
         Assert.IsTrue(exists);
     }
 }
