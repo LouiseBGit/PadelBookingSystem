@@ -13,6 +13,7 @@ namespace PadelBooking.Core.Models
         public string LastName { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        //Navigation property (one to many -en kund kan ha många bokningar, en bokning tillhör en kund)
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

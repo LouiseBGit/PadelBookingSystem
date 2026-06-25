@@ -12,16 +12,17 @@ namespace PadelBooking.API
     {
         public static void Main(string[] args)
         {
+            //skapar webbappen
             var builder = WebApplication.CreateBuilder(args);
 
             //databas, EntityFramework core 
             builder.Services.AddDbContext<AppDbContext>(options => 
             options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
-            //controllers, api
+            //aktiverar controllers
             builder.Services.AddControllers();
 
-            
+            //swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -49,7 +50,7 @@ namespace PadelBooking.API
 
 
             app.MapControllers();
-
+            //startar app
             app.Run();
         }
     }

@@ -182,14 +182,19 @@ namespace PadelBooking.API.Controllers
         {
             var bookings = await _bookingService.GetBookingsByDatesAsync(date);
 
-            var bookingDtos = bookings.Select(b => new BookingDto
-            {
-                Id = b.Id,
-                CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
-            }).ToList();
+            //var bookingDtos = bookings.Select(b => new BookingDto
+            //{
+            //    Id = b.Id,
+            //    CourtNumber = b.CourtNumber,
+            //    StartTime = b.StartTime
+            //}).ToList();
 
-            return Ok(bookingDtos);
+            //return Ok(bookingDtos);
+            if (!bookings.Any())
+            {
+                return NotFound("Inga bokningar...");
+            }
+            return Ok(bookings);
         }
 
         /// <summary>
@@ -216,20 +221,30 @@ namespace PadelBooking.API.Controllers
             var bookings = await _bookingService
                 .GetBookingsBetweenDatesAsync(startDate, endDate);
 
-            var bookingDto = bookings.Select(b => new BookingDto
-            {
-                Id = b.Id,
-                CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
-            }).ToList();
+            //var bookingDto = bookings.Select(b => new BookingDto
+            //{
+            //    Id = b.Id,
+            //    CourtNumber = b.CourtNumber,
+            //    StartTime = b.StartTime
+            //}).ToList();
 
-            return Ok(bookingDto);
+            //return Ok(bookingDto);
+            if (!bookings.Any())
+            {
+                return NotFound("Inga bokningar...");
+            }
+            return Ok(bookings);
         }
 
         [HttpGet("date/court")]
         public async Task<ActionResult<List<BookingDto>>> GetByDateAndCourt([FromQuery] DateTime date, [FromQuery] int courtNumber)
         {
             var bookings = await _bookingService.GetBookingsByDateAndCourtAsync(date, courtNumber);
+            
+            if (!bookings.Any())
+            {
+                return NotFound("Inga bokningar...");
+            }
 
             return Ok(bookings);
         }

@@ -11,10 +11,12 @@ using PadelBooking.Core.Models;
 namespace PadelBooking.Core.Services
 {
     /// <summary>
-    /// klass för regler och logik
+    /// klass för regler och logik för bokningar
+    /// hämtar data från repository och kollar att regler följs
     /// </summary>
     public class BookingService : IBookingService
     {
+        //dependency injection av repository
         private readonly IBookingRepository _repository;
 
         public BookingService(IBookingRepository repository)
@@ -24,9 +26,10 @@ namespace PadelBooking.Core.Services
 
         public async Task<List<BookingDto>> GetAllBookingsAsync()
         {
-            
+            //hämtar alla bokningar från repository
             var bookings = await _repository.GetAllBookingsAsync();
-
+            //mappar entities till dto innan de skickas till api
+            //använder navigation propertiy för att få hela kundens namn
             return bookings.Select(b => new BookingDto
             {
                 Id = b.Id,
@@ -50,7 +53,8 @@ namespace PadelBooking.Core.Services
             {
                 Id = booking.Id,
                 CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
+                StartTime = booking.StartTime,
+                CustomerName = booking.Customer.FirstName + " " + booking.Customer.LastName
             };
         }
 
@@ -71,13 +75,7 @@ namespace PadelBooking.Core.Services
             {
                 return false;
             }
-            //regel om dubbelbokning (samma tid, samma bana)
-            //var bookings = await _repository.GetAllBookingsAsync();
-            //bool doubleBooking = bookings.Any(b =>
-            //b.CourtNumber == booking.CourtNumber &&
-            //b.StartTime == booking.StartTime
-            //);
-
+            //kontrollerar eventuell dubbelbokning
             var doubleBooking = await _repository.BookingExistsAsync(
                 booking.CourtNumber,
                 booking.StartTime);
@@ -109,24 +107,12 @@ namespace PadelBooking.Core.Services
             {
                 return false;
             }
-
+            //ignorera den bokning som uppdateras, vid kontroll av dubbelbokning
             var doubleBooking = await _repository.BookingExistsAsync(
                 booking.CourtNumber,
                 booking.StartTime,
                 booking.Id);
 
-            ////regel om dubbelbokning (ignorerar den bokningen som ska ändras)
-            //var bookings = await _repository.GetAllBookingsAsync();
-            ////bool doubleBooking = bookings.Any(b =>
-            ////b.Id == booking.Id &&
-            ////b.CourtNumber == booking.CourtNumber &&
-            ////b.StartTime == booking.StartTime
-            ////);
-            //bool doubleBooking = bookings.Any(b =>
-            //b.Id != booking.Id &&
-            //b.CourtNumber == booking.CourtNumber &&
-            //b.StartTime == booking.StartTime
-            //); 
 
             if (doubleBooking)
             {
@@ -150,18 +136,21 @@ namespace PadelBooking.Core.Services
             {
                 Id = b.Id,
                 CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
+                StartTime = b.StartTime,
+                CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
             }).ToList();
         }
         //visar lediga tider att kunna boka
         public async Task<List<int>> GetAvailableTimesAsync(DateTime date)
         {
+            //hämta alla bokningar för valt datum
             var bookings = await _repository.GetBookingsByDateAsync(date);
 
+            //samlar alla bokade timmar för det valda datumet i en lista
             var bookedHours = bookings
                 .Select(b => b.StartTime.Hour)
                 .ToList();
-
+            //kontrollerar vilka timmar som är lediga
             var availableHours = new List<int>();
 
             for (int hour = 7; hour < 22; hour++)
@@ -188,7 +177,8 @@ namespace PadelBooking.Core.Services
             {
                 Id = b.Id,
                 CourtNumber = b.CourtNumber,
-                StartTime = b.StartTime
+                StartTime = b.StartTime,
+                CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
             }).ToList();
         }
 
@@ -201,7 +191,8 @@ namespace PadelBooking.Core.Services
                 {
                     Id = b.Id,
                     CourtNumber = b.CourtNumber,
-                    StartTime = b.StartTime
+                    StartTime = b.StartTime,
+                    CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
                 })
                 .ToList();
         }

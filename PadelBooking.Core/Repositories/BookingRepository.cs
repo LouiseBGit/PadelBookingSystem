@@ -62,16 +62,36 @@ namespace PadelBooking.Core.Repositories
         public async Task<Booking?> GetBookingByIdAsync(int id)
         {
             //returnera första raden som stämmer överrens, annars null
-            return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .FirstOrDefaultAsync(b => b.Id == id);
         }
         //uppdaterar en redan existerande bokning i databasen
         public async Task UpdateAsync(Booking booking)
         {
+            //var existing = await _context.Bookings
+            //    .FirstOrDefaultAsync(b => b.Id == booking.Id);
+
+            //if (existing == null)
+            //{
+            //    throw new Exception("bokning hittades inte...");
+            //}
+
+            //existing.CourtNumber = booking.CourtNumber;
+            //existing.StartTime = booking.StartTime;
+            //existing.CustomerId = booking.CustomerId;
+
             _context.Bookings.Update(booking);
             //spara uppdateringen
             await _context.SaveChangesAsync();
         }
-
+        /// <summary>
+        /// kontrollerar om det redan finns en likadan bokning
+        /// </summary>
+        /// <param name="courtNumber"></param>
+        /// <param name="startTime"></param>
+        /// <param name="excludeId"></param>
+        /// <returns></returns>
         public async Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime, int? excludeId = null)
         {
             return await _context.Bookings.AnyAsync(b =>
@@ -87,7 +107,9 @@ namespace PadelBooking.Core.Repositories
         /// <returns>lista med bokningar för specifik dag</returns>
         public async Task<List<Booking>> GetBookingsByDateAsync(DateTime date)
         {
-            return await _context.Bookings.Where(b => b.StartTime.Date == date.Date)
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .Where(b => b.StartTime.Date == date.Date)
                 .ToListAsync();
         }
         /// <summary>
@@ -99,13 +121,21 @@ namespace PadelBooking.Core.Repositories
         public async Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
         {
             return await _context.Bookings
+                .Include(b => b.Customer)
                 .Where(b => b.StartTime >= startDate &&
                 b.StartTime <= endDate)
                 .ToListAsync();
         }
+        /// <summary>
+        /// hämtar alla bokningar för en specifik dag och bana
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="courtNumber"></param>
+        /// <returns></returns>
         public async Task<List<Booking>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber)
         {
             return await _context.Bookings
+                .Include(b => b.Customer)
                 .Where(b => b.StartTime.Date == date.Date && b.CourtNumber == courtNumber)
                 .ToListAsync();
         }
