@@ -66,15 +66,7 @@ namespace PadelBooking.API.Controllers
                 return NotFound();
             }
 
-            //mapping -entity till DTO
-            var bookingDto = new BookingDto
-            {
-                Id = booking.Id,
-                CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
-            };
-
-            return Ok(bookingDto);
+            return Ok(booking);
         }
         /// <summary>
         /// skapar ny bokning 
@@ -100,15 +92,18 @@ namespace PadelBooking.API.Controllers
                 return BadRequest("Bokning bryter mot reglerna");
             }
 
-            var resultDto = new BookingDto
-            {
-                Id = booking.Id,
-                CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
-            };
+            var createdBooking = await _bookingService.GetBookingByIdAsync(booking.Id);
 
-            //200 OK
-            return Ok(resultDto);
+            return Ok(createdBooking);
+            //var resultDto = new BookingDto
+            //{
+            //    Id = booking.Id,
+            //    CourtNumber = booking.CourtNumber,
+            //    StartTime = booking.StartTime
+            //};
+
+            ////200 OK
+            //return Ok(resultDto);
         }
 
         /// <summary>
