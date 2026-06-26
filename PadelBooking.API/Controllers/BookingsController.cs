@@ -233,7 +233,11 @@ namespace PadelBooking.API.Controllers
             {
                 return NotFound("Inga bokningar...");
             }
-            return Ok(bookings);
+            return Ok(new
+            {
+                NumberOfBookings = bookings.Count,
+                Bookings = bookings
+            });
         }
 
         [HttpGet("date/court")]

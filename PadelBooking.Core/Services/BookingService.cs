@@ -145,17 +145,24 @@ namespace PadelBooking.Core.Services
         {
             //hämta alla bokningar för valt datum
             var bookings = await _repository.GetBookingsByDateAsync(date);
+            //tre banor
+            var courtCount = 3;
 
-            //samlar alla bokade timmar för det valda datumet i en lista
-            var bookedHours = bookings
-                .Select(b => b.StartTime.Hour)
-                .ToList();
-            //kontrollerar vilka timmar som är lediga
+            ////samlar alla bokade timmar för det valda datumet i en lista
+            //var bookedHours = bookings
+            //    .Select(b => b.StartTime.Hour)
+            //    .ToList();
+
+            //lista för vilka timmar som är lediga
             var availableHours = new List<int>();
-
+            //går igenom alla timmar som kan bokas
             for (int hour = 7; hour < 22; hour++)
             {
-                if (!bookedHours.Contains(hour))
+                //räknar hur många bokningar som finns i denna timman
+                var bookedCounts = bookings
+                    .Count(b => b.StartTime.Hour == hour);
+                //om inte alla är bokade finns minst en ledig bana
+                if (bookedCounts < courtCount)
                 {
                     availableHours.Add(hour);
                 }
