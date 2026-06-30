@@ -28,9 +28,9 @@ namespace PadelBooking.Core.Interfaces
         /// <summary>
         /// skapar en ny bokning
         /// </summary>
-        /// <param name="booking"></param>
-        /// <returns>returnerar true om bokningen skapades, annars false om regel bröts</returns>
-        Task<bool> CreateBookingAsync(Booking booking);
+        /// <param name="dto"></param>
+        /// <returns>en BookingDto om lyckas, annars null</returns>
+        Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto);
         /// <summary>
         /// uppdaterar en befintlig bokning
         /// </summary>

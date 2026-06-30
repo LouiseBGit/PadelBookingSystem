@@ -69,41 +69,35 @@ namespace PadelBooking.API.Controllers
             return Ok(booking);
         }
         /// <summary>
-        /// skapar ny bokning 
+        /// skapar ny bokning
         /// validering sker i service
         /// </summary>
-        /// <param name="booking"></param>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost] 
         public async Task<ActionResult> CreateBooking(CreateBookingDto dto)
         {
-            //mapping - DTO till Entity
-            var booking = new Booking
-            {
-                CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime,
-                CustomerId = dto.CustomerId
-            };
+            
 
-            //service hanterar reglerna
+            //service hanterar reglerna och returnerar BookingDto om bokning lyckas
             var result = await _bookingService.CreateBookingAsync(booking);
 
-            if (!result)
+            //om någon regel bryts returnerar service null
+            if (result == null)
             {
                 return BadRequest("Bokning bryter mot reglerna");
             }
 
-            var createdBooking = await _bookingService.GetBookingByIdAsync(booking.Id);
 
-            return Ok(createdBooking);
-            //var resultDto = new BookingDto
-            //{
-            //    Id = booking.Id,
-            //    CourtNumber = booking.CourtNumber,
-            //    StartTime = booking.StartTime
-            //};
-
-            ////200 OK
-            //return Ok(resultDto);
+            //Returnerar 201 Created eftersom en ny bokning skapats.
+            //GetBookingById är metoden som kan användas för att hämta bokningen igen.
+            //Id skickas med så rätt bokning kan hittas.
+            //Result är bokningen som skickas tillbaka.
+            return CreatedAtAction(
+                nameof(GetBookingById),
+                new { id = result.Id },
+                result);
+           
         }
 
         /// <summary>

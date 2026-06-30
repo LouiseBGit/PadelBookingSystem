@@ -57,23 +57,35 @@ namespace PadelBooking.Core.Services
                 CustomerName = booking.Customer.FirstName + " " + booking.Customer.LastName
             };
         }
-
-        public async Task<bool> CreateBookingAsync(Booking booking)
+        /// <summary>
+        /// skapar en ny bokning
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns>BookingDto om reglerna följs</returns>
+        public async Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto)
         {
+            //mapping - DTO till Entity
+            var booking = new Booking
+            {
+                CourtNumber = dto.CourtNumber,
+                StartTime = dto.StartTime,
+                CustomerId = dto.CustomerId
+            };
+
             //regel om tid
             if (booking.StartTime.Hour < 7 || booking.StartTime.Hour >= 22)
             {
-                return false;
+                return null;
             }
             //regel om hel timma
             if (booking.StartTime.Minute != 0)
             {
-                return false;
+                return null;
             }
             //regel om vilken bana
             if (booking.CourtNumber < 1 || booking.CourtNumber > 3)
             {
-                return false;
+                return null;
             }
             //kontrollerar eventuell dubbelbokning
             var doubleBooking = await _repository.BookingExistsAsync(
@@ -82,12 +94,18 @@ namespace PadelBooking.Core.Services
 
             if (doubleBooking)
             {
-                return false;
+                return null;
             }
 
             //spara om alla regler är ok
             await _repository.AddAsync(booking);
-            return true;
+            return new BookingDto
+            {
+                Id = booking.Id,
+                CourtNumber = booking.CourtNumber,
+                StartTime = booking.StartTime,
+                CustomerName = booking.Customer?.FirstName + " " + booking.Customer?.LastName
+            };
         }
         public async Task<bool> UpdateBookingAsync(Booking booking)
         {
