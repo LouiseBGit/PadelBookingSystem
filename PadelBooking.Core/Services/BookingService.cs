@@ -18,10 +18,12 @@ namespace PadelBooking.Core.Services
     {
         //dependency injection av repository
         private readonly IBookingRepository _repository;
+        private readonly ICustomerRepository _customerRepository;
 
-        public BookingService(IBookingRepository repository)
+        public BookingService(IBookingRepository repository, ICustomerRepository customerRepository)
         {
             _repository = repository;
+            _customerRepository = customerRepository;
         }
 
         public async Task<List<BookingDto>> GetAllBookingsAsync()
@@ -64,6 +66,12 @@ namespace PadelBooking.Core.Services
         /// <returns>BookingDto om reglerna följs</returns>
         public async Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto)
         {
+            var customer = await _customerRepository.GetCustomerByIdAsync(dto.CustomerId);
+
+            if (customer == null)
+            {
+                return null;
+            }
             //mapping - DTO till Entity
             var booking = new Booking
             {
@@ -104,26 +112,41 @@ namespace PadelBooking.Core.Services
                 Id = booking.Id,
                 CourtNumber = booking.CourtNumber,
                 StartTime = booking.StartTime,
-                CustomerName = booking.Customer?.FirstName + " " + booking.Customer?.LastName
+                CustomerName = customer.FirstName + " " + customer.LastName
             };
         }
-        public async Task<bool> UpdateBookingAsync(Booking booking)
+        public async Task<BookingDto?> UpdateBookingAsync(UpdateBookingDto dto, int id)
         {
+            var customer = await _customerRepository.GetCustomerByIdAsync(dto.CustomerId);
+
+            if (customer == null)
+            {
+                return null;
+            }
+
+            var booking = new Booking
+            {
+                Id = id,
+                CourtNumber = dto.CourtNumber,
+                StartTime = dto.StartTime,
+                CustomerId = dto.CustomerId
+            };
+
             //regel om tid
             if (booking.StartTime.Hour < 7 || booking.StartTime.Hour >= 22)
             {
-                return false;
+                return null;
             }
 
             //regel om hel timma
             if (booking.StartTime.Minute != 0)
             {
-                return false;
+                return null;
             }
             //regel om vilken bana
             if (booking.CourtNumber < 1 || booking.CourtNumber > 3)
             {
-                return false;
+                return null;
             }
             //ignorera den bokning som uppdateras, vid kontroll av dubbelbokning
             var doubleBooking = await _repository.BookingExistsAsync(
@@ -134,11 +157,18 @@ namespace PadelBooking.Core.Services
 
             if (doubleBooking)
             {
-                return false;
+                return null;
             }
 
             await _repository.UpdateAsync(booking);
-            return true;
+
+            return new BookingDto
+            {
+                Id = booking.Id,
+                CourtNumber = booking.CourtNumber,
+                StartTime = booking.StartTime,
+                CustomerName = customer.FirstName + " " + customer.LastName
+            };
         }
         public async Task<bool> DeleteBookingAsync(int id)
         {

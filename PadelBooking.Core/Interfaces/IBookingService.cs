@@ -32,11 +32,12 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>en BookingDto om lyckas, annars null</returns>
         Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto);
         /// <summary>
-        /// uppdaterar en befintlig bokning
+        /// Uppdaterar en bokning med specifikt id
         /// </summary>
-        /// <param name="booking"></param>
-        /// <returns>returnerar true om uppdateringen lyckades, annars false om regel bröts</returns>
-        Task<bool> UpdateBookingAsync(Booking booking);
+        /// <param name="dto"></param>
+        /// <param name="id"></param>
+        /// <returns>BookingDto</returns>
+        Task<BookingDto?> UpdateBookingAsync(UpdateBookingDto dto, int id);
         /// <summary>
         /// tar bort en specifik bokning baserat på ID
         /// </summary>
