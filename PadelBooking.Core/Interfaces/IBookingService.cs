@@ -47,7 +47,7 @@ namespace PadelBooking.Core.Interfaces
 
         Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date, int? courtNumber);
 
-        Task<List<int>> GetAvailableTimesAsync(DateTime date);
+        Task<List<int>> GetAvailableTimesAsync(DateTime date, int courtNumber);
         /// <summary>
         /// Bokning mellan specifikt start- och slutdatum
         /// </summary>
@@ -58,5 +58,6 @@ namespace PadelBooking.Core.Interfaces
 
         Task<List<BookingDto>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber);
 
+        Task<List<AvailableTimesDto>> GetAvailableTimesBetweenDatesAsync(DateTime startDate, DateTime endDate, int courtNumber);
     }
 }

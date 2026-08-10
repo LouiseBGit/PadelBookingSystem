@@ -201,33 +201,62 @@ namespace PadelBooking.Core.Services
             }).ToList();
         }
         //visar lediga tider att kunna boka
-        public async Task<List<int>> GetAvailableTimesAsync(DateTime date)
+        public async Task<List<int>> GetAvailableTimesAsync(DateTime date, int courtNumber)
         {
-            //hämta alla bokningar för valt datum
-            var bookings = await _repository.GetBookingsByDateAsync(date);
-            //tre banor
-            var courtCount = 3;
-
-            ////samlar alla bokade timmar för det valda datumet i en lista
-            //var bookedHours = bookings
-            //    .Select(b => b.StartTime.Hour)
-            //    .ToList();
+            //hämta alla bokningar för valt datum och vald bana
+            var bookings = await _repository.GetBookingsByDateAndCourtAsync(date, courtNumber);
+            
 
             //lista för vilka timmar som är lediga
             var availableHours = new List<int>();
+
             //går igenom alla timmar som kan bokas
             for (int hour = 7; hour < 22; hour++)
             {
-                //räknar hur många bokningar som finns i denna timman
-                var bookedCounts = bookings
-                    .Count(b => b.StartTime.Hour == hour);
-                //om inte alla är bokade finns minst en ledig bana
-                if (bookedCounts < courtCount)
+                //kollar om det finns en bokning på denna timman
+                var isBooked = bookings
+                    .Any(b => b.StartTime.Hour == hour);
+
+                //om inte tiden är bokad läggs den till som ledig
+                if (!isBooked)
                 {
                     availableHours.Add(hour);
                 }
             }
             return availableHours;
+        }
+
+        /// <summary>
+        /// hämtar lediga tider för en vald bana mellan två datum
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="courtNumber"></param>
+        /// <returns>Lista med datum och lediga timmar för varje datum</returns>
+        public async Task<List<AvailableTimesDto>> GetAvailableTimesBetweenDatesAsync(DateTime startDate, DateTime endDate, int courtNumber)
+        {
+            //skapar en tom lista där svaret ska sparas
+            var result = new List<AvailableTimesDto>();
+
+            //går igenom alla datum från startdatum till slutdatum
+            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+            {
+                //hämtar lediga timmar för valt datum och bana
+                var availableHours = await GetAvailableTimesAsync(date, courtNumber);
+
+                //hämtar dto-objekt som innehåller datumet och de lediga timmarna
+                var availableTimes = new AvailableTimesDto
+                {
+                    Date = date,
+                    AvailableHours = availableHours
+                };
+
+                //lägger till objektet i resultatlistan
+                result.Add(availableTimes);
+            }
+
+            //returnerar alla datum med deras lediga timmar
+            return result;
         }
 
         /// <summary>

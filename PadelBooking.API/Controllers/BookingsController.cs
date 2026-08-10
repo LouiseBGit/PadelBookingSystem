@@ -170,9 +170,25 @@ namespace PadelBooking.API.Controllers
         /// <param name="date"></param>
         /// <returns></returns>
         [HttpGet("available")]
-        public async Task<ActionResult<List<int>>> GetAvailableTimes([FromQuery] DateTime date)
+        public async Task<ActionResult<List<int>>> GetAvailableTimes([FromQuery] DateTime date, [FromQuery] int courtNumber)
         {
-            var result = await _bookingService.GetAvailableTimesAsync(date);
+            var result = await _bookingService.GetAvailableTimesAsync(date, courtNumber);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// hämtar lediga tider för vald bana mellan två datum
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="courtNumber"></param>
+        [HttpGet("available/between")]
+        public async Task<ActionResult<List<AvailableTimesDto>>> GetAvailableTimesBetweenDates([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] int courtNumber)
+        {
+            //skickar datumen och banan till service
+            var result = await _bookingService.GetAvailableTimesBetweenDatesAsync(startDate, endDate, courtNumber);
+
+            //returnerar restultatet 
             return Ok(result);
         }
 
