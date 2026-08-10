@@ -80,7 +80,7 @@ namespace PadelBooking.API.Controllers
             
 
             //service hanterar reglerna och returnerar BookingDto om bokning lyckas
-            var result = await _bookingService.CreateBookingAsync(booking);
+            var result = await _bookingService.CreateBookingAsync(dto);
 
             //om någon regel bryts returnerar service null
             if (result == null)
@@ -106,7 +106,7 @@ namespace PadelBooking.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBooking(int id)
+        public async Task<ActionResult> DeleteBooking(int id)
         {
             //koll om bokning finns 
             var booking = await _bookingService.GetBookingByIdAsync(id);
@@ -133,33 +133,18 @@ namespace PadelBooking.API.Controllers
         /// <param name="booking"></param>
         /// <returns>uppdaterad bokning</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBooking(int id, UpdateBookingDto dto)
+        public async Task<ActionResult> UpdateBooking(int id, UpdateBookingDto dto)
         {
-            //mapping - DTO till entity 
-            var booking = new Booking
-            {
-                Id = id,
-                CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime,
-                CustomerId = dto.CustomerId
-            };
-
+            
             //service kontrollerar regler innan uppdatering görs
-            var result = await _bookingService.UpdateBookingAsync(booking);
+            var result = await _bookingService.UpdateBookingAsync(id, dto);
 
-            if (!result)
+            if (result == null)
             {
-                return BadRequest("Uppdateringen misslyckades pga bruten regel"); 
+                return BadRequest("Misslyckad uppdatering...");
             }
-
-            var resultDto = new BookingDto
-            {
-                Id = booking.Id,
-                CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
-            };
-            //200 OK och uppdaterar bokning
-            return Ok("Bokning uppdaterad");
+            
+            return Ok(result);
         }
         /// <summary>
         /// Hämtar alla bokningar för ett specifikt datum
@@ -167,18 +152,11 @@ namespace PadelBooking.API.Controllers
         /// <param name="date"></param>
         /// <returns>Lista med alla bokningar för vald dag</returns>
         [HttpGet("date")]
-        public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date)
+        public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date, int? courtNumber)
         {
-            var bookings = await _bookingService.GetBookingsByDatesAsync(date);
+            var bookings = await _bookingService.GetBookingsByDatesAsync(date, courtNumber);
 
-            //var bookingDtos = bookings.Select(b => new BookingDto
-            //{
-            //    Id = b.Id,
-            //    CourtNumber = b.CourtNumber,
-            //    StartTime = b.StartTime
-            //}).ToList();
-
-            //return Ok(bookingDtos);
+            
             if (!bookings.Any())
             {
                 return NotFound("Inga bokningar...");

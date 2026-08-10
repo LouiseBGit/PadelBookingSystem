@@ -1,4 +1,5 @@
-﻿using PadelBooking.Core.Interfaces;
+﻿using PadelBooking.Core.DTOs;
+using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -25,24 +26,40 @@ namespace PadelBooking.Core.Services
             _repository = repository;
         }
         /// <summary>
-        /// skapar en ny kund 
+        /// skapar en ny kund
         /// </summary>
-        /// <param name="customer"></param>
-        /// <returns>true om kunden skapades</returns>
-        public async Task<bool> CreateCustomerAsync(Customer customer)
+        /// <param name="dto"></param>
+        /// <returns>en ny customerDto om det lyckades</returns>
+        public async Task<CustomerDto?> CreateCustomerAsync(CreateCustomerDto dto)
         {
             //kolla om kund redan finns
-            var exists = await _repository.GetCustomerByEmailAsync(customer.Email);
+            var exists = await _repository.GetCustomerByEmailAsync(dto.Email);
 
             //stop om email redan finns, så inte samma kund kan läggas till flera gånger
             if (exists != null)
             {
-                return false;
+                return null;
             }
+
+            var customer = new Customer
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber
+            };
+
             //..annars spara
             await _repository.AddAsync(customer);
 
-            return true;            
+            return new CustomerDto
+            {
+                Id = customer.Id,
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
         }
         /// <summary>
         /// raderar kund baserat på id
@@ -66,19 +83,42 @@ namespace PadelBooking.Core.Services
         /// <summary>
         /// Hämtar alla kunder
         /// </summary>
-        /// <returns>alla kunder från databasen, som en lista</returns>
-        public async Task<List<Customer>> GetAllCustomerAsync()
+        /// <returns>returnerar en lista med alla kunder, om kunder existerar</returns>
+        public async Task<List<CustomerDto>> GetAllCustomerAsync()
         {
-            return await _repository.GetAllCustomersAsync();
+            var customers = await _repository.GetAllCustomersAsync();
+
+            return customers.Select(c => new CustomerDto
+            {
+                Id = c.Id,
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                Email = c.Email,
+                PhoneNumber = c.PhoneNumber
+            }).ToList();
         }
         /// <summary>
         /// hämtar en kund baserat på id
         /// </summary>
         /// <param name="id"></param>
         /// <returns>kunden om denne finns, annars null</returns>
-        public async Task<Customer?> GetCustomerByIdAsync(int id)
+        public async Task<CustomerDto?> GetCustomerByIdAsync(int id)
         {
-            return await _repository.GetCustomerByIdAsync(id);
+            var customer = await _repository.GetCustomerByIdAsync(id);
+
+            if (customer == null)
+            {
+                return null;
+            }
+
+            return new CustomerDto
+            {
+                Id = customer.Id,
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
             
         }
         /// <summary>
@@ -86,11 +126,33 @@ namespace PadelBooking.Core.Services
         /// </summary>
         /// <param name="customer"></param>
         /// <returns>true om uppdateringen lyckades</returns>
-        public async Task<bool> UpdateCustomerAsync(Customer customer)
+        public async Task<CustomerDto?> UpdateCustomerAsync(int id, UpdateCustomerDto dto)
         {
+            var customer = await _repository.GetCustomerByIdAsync(id);
+
+            if (customer == null)
+            {
+                return null;
+            }
+
+            //uppdaterar kunden
+            customer.FirstName = dto.FirstName;
+            customer.LastName = dto.LastName;
+            customer.Email = dto.Email;
+            customer.PhoneNumber = dto.PhoneNumber;
+
+            //spara ändringen
             await _repository.UpdateAsync(customer);
 
-            return true;
+            //returnera uppdaterad kund
+            return new CustomerDto
+            {
+                Id = customer.Id,
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
         }
     }
 }

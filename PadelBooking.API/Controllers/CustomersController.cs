@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using PadelBooking.Core.DTOs;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
+using PadelBooking.Core.Services;
 
 namespace PadelBooking.API.Controllers
 {
@@ -20,18 +21,9 @@ namespace PadelBooking.API.Controllers
         [HttpGet]
         public async Task<ActionResult<List<CustomerDto>>> GetAll()
         {
-            var customer = await _customerService.GetAllCustomerAsync();
+            var customers = await _customerService.GetAllCustomerAsync();
 
-            var customerDtos = customer.Select(c => new CustomerDto
-            {
-                Id = c.Id,
-                FirstName = c.FirstName,
-                LastName = c.LastName,
-                Email = c.Email,
-                PhoneNumber = c.PhoneNumber
-            }).ToList(); 
-
-            return Ok(customerDtos);
+            return Ok(customers);
         }
 
         [HttpGet("{id}")]
@@ -44,37 +36,30 @@ namespace PadelBooking.API.Controllers
                 return NotFound();
             }
 
-            var customerDto = new CustomerDto
-            {
-                Id = customer.Id,
-                FirstName = customer.FirstName,
-                LastName = customer.LastName,
-                Email = customer.Email,
-                PhoneNumber = customer.PhoneNumber
-            };
-
-            return Ok(customerDto); 
+            return Ok(customer); 
         }
 
         [HttpPost]
         public async Task<ActionResult> CreateCustomer(CreateCustomerDto dto)
         {
-            var customer = new Customer
-            {
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber
-            };
+            //service hanterar reglerna och returnerar dto om skapandet lyckas
+            var result = await _customerService.CreateCustomerAsync(dto);
 
-            var result = await _customerService.CreateCustomerAsync(customer);
-
-            if(!result)
+            //om någon regel bryts returnerar service null
+            if (result == null)
             {
-                return BadRequest("Kunde inte skapa kunden..");
+                return BadRequest("En kund med samma epost finns redan...");
             }
 
-            return Ok("Kund skapad!");
+
+            //Returnerar 201 Created eftersom en ny kund skapats.
+            //GetAllCustomerById är metoden som kan användas för att hämta den skapade kunden igen.
+            //Id skickas med så rätt bokning kan hittas.
+            //Result är bokningen som skickas tillbaka.
+            return CreatedAtAction(
+                nameof(GetAllCustomerById),
+                new { id = result.Id },
+                result);
         }
 
         [HttpDelete("{id}")]
@@ -100,28 +85,15 @@ namespace PadelBooking.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateCustomer(int id, UpdateCustomerDto dto)
         {
-            //hämtar kund från databasen
-            var customer = await _customerService.GetCustomerByIdAsync(id);
+          
+            var result = await _customerService.UpdateCustomerAsync(id, dto);
 
-            if(customer == null)
+            if (result == null)
             {
-                return NotFound("Kunden hittades inte...");
+                return NotFound("Kunde inte uppdatera kunden...");
             }
 
-            //mapping DTO till Entity
-            customer.FirstName = dto.FirstName;
-            customer.LastName = dto.LastName;
-            customer.Email = dto.Email;
-            customer.PhoneNumber = dto.PhoneNumber;
-
-            var result = await _customerService.UpdateCustomerAsync(customer);
-
-            if(!result)
-            {
-                return BadRequest("Kunde inte uppdatera kunden...");
-            }
-
-            return Ok("Kund uppdaterad.");
+            return Ok(result);
         }
 
     }

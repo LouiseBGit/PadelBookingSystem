@@ -37,7 +37,7 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="dto"></param>
         /// <param name="id"></param>
         /// <returns>BookingDto</returns>
-        Task<BookingDto?> UpdateBookingAsync(UpdateBookingDto dto, int id);
+        Task<BookingDto?> UpdateBookingAsync(int id, UpdateBookingDto dto);
         /// <summary>
         /// tar bort en specifik bokning baserat på ID
         /// </summary>
@@ -45,7 +45,7 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar true om borttagningen lyckades</returns>
         Task<bool> DeleteBookingAsync(int id);
 
-        Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date);
+        Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date, int? courtNumber);
 
         Task<List<int>> GetAvailableTimesAsync(DateTime date);
         /// <summary>

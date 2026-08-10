@@ -115,7 +115,7 @@ namespace PadelBooking.Core.Services
                 CustomerName = customer.FirstName + " " + customer.LastName
             };
         }
-        public async Task<BookingDto?> UpdateBookingAsync(UpdateBookingDto dto, int id)
+        public async Task<BookingDto?> UpdateBookingAsync(int id, UpdateBookingDto dto)
         {
             var customer = await _customerRepository.GetCustomerByIdAsync(dto.CustomerId);
 
@@ -176,10 +176,22 @@ namespace PadelBooking.Core.Services
             return true;
         }
 
-        public async Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date)
+        public async Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date, int? courtNumber)
         {
-            var bookings = await _repository.GetBookingsByDateAsync(date);
-
+            //skapar en variabel som ska innehålla en lista av bokningar
+            List<Booking> bookings;
+            //om nummer på banan skickas med
+            if (courtNumber.HasValue)
+            {
+                //hämtar bokningar för datum och valt bannummer
+                bookings = await _repository.GetBookingsByDateAndCourtAsync(date, courtNumber.Value);
+            }
+            else
+            {
+                //om ingen bana valts hämtas alla banornas bokningar
+                bookings = await _repository.GetBookingsByDateAsync(date);
+            }
+            //gör om Booking från databas till BookingDto för Api-svar
             return bookings.Select(b => new BookingDto
             {
                 Id = b.Id,
