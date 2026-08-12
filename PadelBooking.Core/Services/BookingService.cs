@@ -227,13 +227,15 @@ namespace PadelBooking.Core.Services
         }
 
         /// <summary>
-        /// hämtar lediga tider för en vald bana mellan två datum
+        /// hämtar lediga tider mellan två datum
+        /// om en bana valts visas tider för den
+        /// om ingen bana valts visas tider för alla tre
         /// </summary>
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <param name="courtNumber"></param>
-        /// <returns>Lista med datum och lediga timmar för varje datum</returns>
-        public async Task<List<AvailableTimesDto>> GetAvailableTimesBetweenDatesAsync(DateTime startDate, DateTime endDate, int courtNumber)
+        /// <returns>Lista med datum, bana och lediga timmar </returns>
+        public async Task<List<AvailableTimesDto>> GetAvailableTimesBetweenDatesAsync(DateTime startDate, DateTime endDate, int? courtNumber)
         {
             //skapar en tom lista där svaret ska sparas
             var result = new List<AvailableTimesDto>();
@@ -241,18 +243,44 @@ namespace PadelBooking.Core.Services
             //går igenom alla datum från startdatum till slutdatum
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                //hämtar lediga timmar för valt datum och bana
-                var availableHours = await GetAvailableTimesAsync(date, courtNumber);
-
-                //hämtar dto-objekt som innehåller datumet och de lediga timmarna
-                var availableTimes = new AvailableTimesDto
+                if (courtNumber.HasValue)
                 {
-                    Date = date,
-                    AvailableHours = availableHours
-                };
+                    //hämtar lediga timmar för aktuellt datum och den valda banan
+                    var availableHours = await GetAvailableTimesAsync(date, courtNumber.Value);
 
-                //lägger till objektet i resultatlistan
-                result.Add(availableTimes);
+                    //skapar ett DTO-objekt med datum, bana och lediga timmar
+                    var availableTimes = new AvailableTimesDto
+                    {
+                        Date = date,
+                        CourtNumber = courtNumber.Value,
+                        AvailableHours = availableHours
+                    };
+
+                    //lägger till resultatet för den här dagen i listan
+                    result.Add(availableTimes);
+                }
+                else
+                {
+                    //går igenom alla tre banor
+                    for (int court = 1; court <= 3; court++)
+                    {
+                        //hämtar lediga timmar för aktuellt datum och aktuell bana
+                        var availableHours = await GetAvailableTimesAsync(date, court);
+
+                        //skapar ett DTO-objekt för aktuell dag och bana
+                        var availableTimes = new AvailableTimesDto
+                        {
+                            Date = date,
+                            CourtNumber = court,
+                            AvailableHours = availableHours
+                        };
+
+                        //lägger till resultatet för aktuell dag och bana i listan
+                        result.Add(availableTimes);
+                    }
+                }
+
+
             }
 
             //returnerar alla datum med deras lediga timmar
@@ -265,17 +293,33 @@ namespace PadelBooking.Core.Services
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        public async Task<List<BookingDto>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
+        public async Task<BookingSummaryDto> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate)
         {
             var bookings = await _repository.GetBookingsBetweenDatesAsync(startDate, endDate);
 
-            return bookings.Select(b => new BookingDto
+            var bookingDtos = bookings.Select(b => new BookingDto
             {
                 Id = b.Id,
                 CourtNumber = b.CourtNumber,
                 StartTime = b.StartTime,
                 CustomerName = b.Customer.FirstName + " " + b.Customer.LastName
             }).ToList();
+
+            //skapar en sammanfattning av bokningarna
+            var summary = new BookingSummaryDto
+            {
+                TotalBookings = bookings.Count,
+
+                //räknar hur många bokningar som finns på varje bana
+                Court1Total = bookings.Count(b => b.CourtNumber == 1),
+                Court2Total = bookings.Count(b => b.CourtNumber == 2),
+                Court3Total = bookings.Count(b => b.CourtNumber == 3),
+                //lägger till själva bokningarna i sammanfattningen
+                Bookings = bookingDtos
+            };
+
+            //returnerar sammanfattningen
+            return summary;
         }
 
         public async Task<List<BookingDto>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber)

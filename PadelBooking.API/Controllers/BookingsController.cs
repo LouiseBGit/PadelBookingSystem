@@ -183,7 +183,7 @@ namespace PadelBooking.API.Controllers
         /// <param name="endDate"></param>
         /// <param name="courtNumber"></param>
         [HttpGet("available/between")]
-        public async Task<ActionResult<List<AvailableTimesDto>>> GetAvailableTimesBetweenDates([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] int courtNumber)
+        public async Task<ActionResult<List<AvailableTimesDto>>> GetAvailableTimesBetweenDates([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] int? courtNumber)
         {
             //skickar datumen och banan till service
             var result = await _bookingService.GetAvailableTimesBetweenDatesAsync(startDate, endDate, courtNumber);
@@ -199,28 +199,16 @@ namespace PadelBooking.API.Controllers
         /// <param name="endDate"></param>
         /// <returns>Lista med bokningar mellan specifika datum</returns>
         [HttpGet("between")]
-        public async Task<ActionResult<List<BookingDto>>> GetBookingsBetweenDates(DateTime startDate, DateTime endDate)
+        public async Task<ActionResult<BookingSummaryDto>> GetBookingsBetweenDates(DateTime startDate, DateTime endDate)
         {
             var bookings = await _bookingService
                 .GetBookingsBetweenDatesAsync(startDate, endDate);
 
-            //var bookingDto = bookings.Select(b => new BookingDto
-            //{
-            //    Id = b.Id,
-            //    CourtNumber = b.CourtNumber,
-            //    StartTime = b.StartTime
-            //}).ToList();
-
-            //return Ok(bookingDto);
-            if (!bookings.Any())
+            if (bookings.TotalBookings == 0)
             {
                 return NotFound("Inga bokningar...");
             }
-            return Ok(new
-            {
-                NumberOfBookings = bookings.Count,
-                Bookings = bookings
-            });
+            return Ok(bookings);
         }
 
         [HttpGet("date/court")]

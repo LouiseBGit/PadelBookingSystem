@@ -29,10 +29,13 @@ public class BookingRepositoryTests
     public async Task AddAsync_ShouldAddBookingToDatabase()
     {
         //arrange
+        //skapar en context som ger tillgång till testdatabasen
         using var context = new AppDbContext(_options);
-        //testar riktig EF
+        
+        //skapar repositoryn vi ska testa
         var repository = new BookingRepository(context);
-        //skapar test-bokning
+       
+        //skapar test-bokning som ska sparas
         var booking = new Booking
         {
             CourtNumber = 1,
@@ -41,16 +44,17 @@ public class BookingRepositoryTests
         };
 
         //act
-        //lägga till bokning i databasen
+        //anropar repository och lägger till bokning i test-databasen
         await repository.AddAsync(booking);
 
         //assert
-        //kontrollera att den sparades
+        //skapar en ny context mot samma databas för att kontrollera att den sparades
         using var assertContext = new AppDbContext(_options);
 
-        //kollar att databasen fick data
+        //räknar bokningarna som finns i databasen
         var result = await assertContext.Bookings.CountAsync();
 
+        //det ska finnas exakt en bokning
         Assert.AreEqual(1, result);
     }
 
@@ -58,10 +62,13 @@ public class BookingRepositoryTests
     public async Task DeleteAsync_ShouldRemoveBookingFromDatabase()
     {
         //arrange
-        //skapa context och repository
+        //skapa context som ger tillgång till testdatabasen
         using var context = new AppDbContext(_options);
+
+        //skapar repositoryn som ska testas
         var repository = new BookingRepository(context);
-        //lägger in en bokning som ska tas bort
+
+        //lägger in en bokning som sen ska tas bort
         var booking = new Booking
         {
             CourtNumber = 1,
@@ -69,18 +76,21 @@ public class BookingRepositoryTests
             CustomerId = 1
         };
 
+        //lägger till bokningen som sen ska tas bort 
         await repository.AddAsync(booking);
 
         //act
-        //ta bort bokning
+        //ta bort bokningen med hjälp av id
         await repository.DeleteAsync(booking.Id);
 
         //assert
-        //kontrollera att databasen är tom
+        //skapar ny context mot samma testdatabas för att kontrollera att databasen är tom
         using var assertContext = new AppDbContext(_options);
 
+        //räknar hur många bokningar som finns kvar
         var count = await assertContext.Bookings.CountAsync();
 
+        //det ska finnas noll bokningar kvar
         Assert.AreEqual(0, count);
 
     }
@@ -89,19 +99,24 @@ public class BookingRepositoryTests
     public async Task BookingExistsAsync_ShouldReturnTrue_WhenBookingExists()
     {
         //arrange
-        //skapar context och repository
+        //skapar context som ger tillgång till testdatabasen
         using var context = new AppDbContext(_options);
+
+        //skapar repositoryn som vi ska testa
         var repository = new BookingRepository(context);
-        //lägger in en bokning direkt i databasen
+
+        //lägger in en bokning direkt i testdatabasen
         await context.Bookings.AddAsync(new Booking
         {
             CourtNumber = 1,
             StartTime = new DateTime(2026, 1, 1, 10, 0, 0)
         });
 
+        //sparar bokningen i testdatabasen
         await context.SaveChangesAsync();
+
         //act
-        //kontrollerar om bokning finns
+        //frågar repositoryn om det finns en bokning på bana 1 den 1 jan 10.00
         var exists = await repository.BookingExistsAsync(
             1,
             new DateTime(2026, 1, 1, 10, 0, 0)
