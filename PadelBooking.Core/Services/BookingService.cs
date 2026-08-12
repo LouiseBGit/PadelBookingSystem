@@ -172,7 +172,19 @@ namespace PadelBooking.Core.Services
         }
         public async Task<bool> DeleteBookingAsync(int id)
         {
+            //hämta bokningen för att kolla att den finns
+            var booking = await _repository.GetBookingByIdAsync(id);
+            
+            //om bokning inte finns kan den inte tas bort
+            if (booking == null)
+            {
+                return false;
+            }
+
+            //tar bort bokning om den finns
             await _repository.DeleteAsync(id);
+
+            //returnera true när borttagning lyckades
             return true;
         }
 

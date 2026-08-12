@@ -108,21 +108,15 @@ namespace PadelBooking.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteBooking(int id)
         {
-            //koll om bokning finns 
-            var booking = await _bookingService.GetBookingByIdAsync(id);
-
-            if (booking == null)
-            {
-                return NotFound("Bokningen hittades inte");
-            }
-
+            //service kollar om nokning finns och försöker ta bort den
             var result = await _bookingService.DeleteBookingAsync(id);
 
             if (!result)
             {
-                return BadRequest("Kunde inte ta bort bokningen");
+                return NotFound("Bokningen hittades inte");
             }
 
+            //bokningen hittades och togs bort
             return Ok("Bokning borttagen");
 
         }

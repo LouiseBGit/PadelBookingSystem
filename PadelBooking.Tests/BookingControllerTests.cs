@@ -165,12 +165,11 @@ namespace PadelBooking.Tests
             //skapar fejkad service
             var mock = new Mock<IBookingService>();
 
-            //låtsas att service inte hittar bokning med id 1
-            //null = bokning inte finns
-            mock.Setup(x => x.GetBookingByIdAsync(1))
-                .ReturnsAsync((BookingDto?)null);
+            //låtsas att service inte kunde ta bort bokningen
+            mock.Setup(x => x.DeleteBookingAsync(1))
+                .ReturnsAsync(false);
 
-            //skapar controllern och skickar inte den fejkade servicen
+            //skapar controllern och skickar in den fejkade servicen
             var controller = new BookingsController(mock.Object);
 
             //act
