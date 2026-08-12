@@ -70,10 +70,10 @@ namespace PadelBooking.API.Controllers
         }
         /// <summary>
         /// skapar ny bokning
-        /// validering sker i service
+        /// validering och bokningsregler hanteras i service
         /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
+        /// <param name="dto">uppgifter för bokningen som skapas</param>
+        /// <returns>201 Created med skapad bokning eller 400 Bad Request om bokning inte godkänns</returns>
         [HttpPost] 
         public async Task<ActionResult> CreateBooking(CreateBookingDto dto)
         {
@@ -205,17 +205,6 @@ namespace PadelBooking.API.Controllers
             return Ok(bookings);
         }
 
-        [HttpGet("date/court")]
-        public async Task<ActionResult<List<BookingDto>>> GetByDateAndCourt([FromQuery] DateTime date, [FromQuery] int courtNumber)
-        {
-            var bookings = await _bookingService.GetBookingsByDateAndCourtAsync(date, courtNumber);
-            
-            if (!bookings.Any())
-            {
-                return NotFound("Inga bokningar...");
-            }
-
-            return Ok(bookings);
-        }
+        
     }
 }

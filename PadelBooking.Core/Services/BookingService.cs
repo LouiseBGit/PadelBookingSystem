@@ -117,6 +117,16 @@ namespace PadelBooking.Core.Services
         }
         public async Task<BookingDto?> UpdateBookingAsync(int id, UpdateBookingDto dto)
         {
+            //hämtar bokningen som ska uppdateras 
+            var booking = await _repository.GetBookingByIdAsync(id);
+            
+            //om bokning inte finns kan den inte uppdateras
+            if (booking == null)
+            {
+                return null;
+            }
+
+            //kontrollera att kunden som skickas med finns
             var customer = await _customerRepository.GetCustomerByIdAsync(dto.CustomerId);
 
             if (customer == null)
@@ -124,35 +134,36 @@ namespace PadelBooking.Core.Services
                 return null;
             }
 
-            var booking = new Booking
-            {
-                Id = id,
-                CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime,
-                CustomerId = dto.CustomerId
-            };
+            //var booking = new Booking
+            //{
+            //    Id = id,
+            //    CourtNumber = dto.CourtNumber,
+            //    StartTime = dto.StartTime,
+            //    CustomerId = dto.CustomerId
+            //};
 
             //regel om tid
-            if (booking.StartTime.Hour < 7 || booking.StartTime.Hour >= 22)
+            if (dto.StartTime.Hour < 7 || dto.StartTime.Hour >= 22)
             {
                 return null;
             }
 
             //regel om hel timma
-            if (booking.StartTime.Minute != 0)
+            if (dto.StartTime.Minute != 0)
             {
                 return null;
             }
             //regel om vilken bana
-            if (booking.CourtNumber < 1 || booking.CourtNumber > 3)
+            if (dto.CourtNumber < 1 || dto.CourtNumber > 3)
             {
                 return null;
             }
+
             //ignorera den bokning som uppdateras, vid kontroll av dubbelbokning
             var doubleBooking = await _repository.BookingExistsAsync(
-                booking.CourtNumber,
-                booking.StartTime,
-                booking.Id);
+                dto.CourtNumber,
+                dto.StartTime,
+                id);
 
 
             if (doubleBooking)
@@ -160,6 +171,12 @@ namespace PadelBooking.Core.Services
                 return null;
             }
 
+            //lägger in de nya värdena i den befintliga bokningen
+            booking.CourtNumber = dto.CourtNumber;
+            booking.StartTime = dto.StartTime;
+            booking.CustomerId = dto.CustomerId;
+
+            //sparar den uppdaterade bokningen
             await _repository.UpdateAsync(booking);
 
             return new BookingDto

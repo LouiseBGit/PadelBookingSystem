@@ -39,6 +39,12 @@ namespace PadelBooking.API.Controllers
             return Ok(customer); 
         }
 
+        /// <summary>
+        /// skapar en ny kund
+        /// validering sker i service
+        /// </summary>
+        /// <param name="dto">uppgifter för kunden som ska skapas </param>
+        /// <returns>201 Created med skapad kund eller 400 Bad Request om kunden inte kan skapas</returns>
         [HttpPost]
         public async Task<ActionResult> CreateCustomer(CreateCustomerDto dto)
         {
@@ -54,8 +60,8 @@ namespace PadelBooking.API.Controllers
 
             //Returnerar 201 Created eftersom en ny kund skapats.
             //GetAllCustomerById är metoden som kan användas för att hämta den skapade kunden igen.
-            //Id skickas med så rätt bokning kan hittas.
-            //Result är bokningen som skickas tillbaka.
+            //Id skickas med så rätt kund kan hittas.
+            //Result är kunden som skickas tillbaka.
             return CreatedAtAction(
                 nameof(GetAllCustomerById),
                 new { id = result.Id },
@@ -65,20 +71,17 @@ namespace PadelBooking.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCustomer(int id)
         {
-            var customer = await _customerService.GetCustomerByIdAsync(id);
+            
+            //service kollar att kunden finns och försöker ta bort den
+            var result = await _customerService.DeleteCustomerAsync(id);
 
-            if (customer == null)
+            //false betyder att kunden inte fanns
+            if (!result)
             {
                 return NotFound("Kunden hittades inte...");
             }
 
-            var result = await _customerService.DeleteCustomerAsync(id);
-
-            if (!result)
-            {
-                return BadRequest("Kunde inte ta bort kunden...");
-            }
-
+            //kunden hittades och togs bort
             return Ok("Kund borttagen!");
         }
 
