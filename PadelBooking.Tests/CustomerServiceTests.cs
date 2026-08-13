@@ -288,6 +288,41 @@ namespace PadelBooking.Tests
             Assert.AreEqual("anton@test.nu", result.Email);
         }
 
+        /// <summary>
+        /// testar att en kund som inte finns inte kan uppdateras
+        /// </summary>
+        [TestMethod]
+        public async Task UpdateCustomer_ShouldReturnNull_WhenCustomerDoesNotExist()
+        {
+            //arrange
+            //skapar fejkad repository
+            var mock = new Mock<ICustomerRepository>();
+
+            //låtsas att kund med ID 1 inte finns (null)
+            mock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync((Customer?)null);
+
+            //skapar service
+            var service = new CustomerService(mock.Object);
+
+            //uppgifterna som kunden ska försöka uppdateras med
+            var dto = new UpdateCustomerDto
+            {
+                FirstName = "Anton",
+                LastName = "Antonsen",
+                Email = "aa@test.sen",
+                PhoneNumber = "9872348972"
+            };
+
+            //act
+            //försöker uppdatera kunden med id 1
+            var result = await service.UpdateCustomerAsync(1, dto);
+
+            //assert
+            //kunden finns inte, därför ska service returnera null
+            Assert.IsNull(result);
+        }
+
         
     }
 

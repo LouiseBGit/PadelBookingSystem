@@ -11,7 +11,7 @@ namespace PadelBooking.Core.Interfaces
     /// interface -för hantrering av kunder i databasen
     /// </summary>
     //interface -vad som ska göras, men inte hur det görs (som ett kontrakt)
-    //metoderna som måste finnas för att hantera bokning
+    //metoderna som måste finnas för att hantera kunder
     //Task = asynkron metod --> annat kan göras undertiden
     public interface ICustomerRepository
     {
@@ -27,10 +27,10 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar kund på specifikt ID, eller null om ingen kund finns</returns>
         Task<Customer?> GetCustomerByIdAsync(int id);
         /// <summary>
-        /// ta fram kunden med email
+        /// ta fram kunden baserat på email
         /// </summary>
         /// <param name="email"></param>
-        /// <returns></returns>
+        /// <returns>kunden med angiven email eller null om den inte finns</returns>
         Task<Customer?> GetCustomerByEmailAsync(string email);
         /// <summary>
         /// lägg till kund

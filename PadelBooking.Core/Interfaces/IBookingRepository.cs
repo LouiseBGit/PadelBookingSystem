@@ -43,11 +43,11 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="id"></param>
         Task DeleteAsync(int id);
         /// <summary>
-        /// bokningar för en viss banan och tid
+        /// kollar om det redan finns en bokning på vald bana och starttid. 
         /// </summary>
         /// <param name="courtNumber"></param>
         /// <param name="startTime"></param>
-        /// <returns></returns>
+        /// <returns>true om bokning finns, annars false</returns>
         Task<bool> BookingExistsAsync(int courtNumber, DateTime startTime, int? excludeId = null);
         /// <summary>
         /// bokningar för en viss dag
@@ -62,7 +62,12 @@ namespace PadelBooking.Core.Interfaces
         /// <param name="endDate"></param>
         /// <returns></returns>
         Task<List<Booking>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
-
+        /// <summary>
+        /// hämtar bokningar för ett specifikt datum och bana
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="courtNumber"></param>
+        /// <returns>Lista med bokningar för valt datum och tid</returns>
         Task<List<Booking>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber);
     }
 }

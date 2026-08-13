@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PadelBooking.Core.Repositories
 {
-    //Repository = använder interface IBookingRepository
+    //Repository = använder interface ICustomerRepository
     //här ligger koden till databasen
     public class CustomerRepository : ICustomerRepository
     {

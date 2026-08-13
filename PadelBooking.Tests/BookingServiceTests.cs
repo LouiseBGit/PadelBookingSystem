@@ -189,6 +189,16 @@ namespace PadelBooking.Tests
             //skapar en fejkad repository för kunder
             var customerMock = new Mock<ICustomerRepository>();
 
+            //låtsas att bokningen redan finns med id 1, så testet kommer till koll för dubbelbokning
+            mock.Setup(x => x.GetBookingByIdAsync(1))
+                .ReturnsAsync(new Booking
+                {
+                    Id = 1,
+                    CourtNumber = 2,
+                    StartTime = new DateTime(2026, 1, 1, 12, 0, 0),
+                    CustomerId = 1
+                });
+
             //låtsas att kunden med id 1 finns
             //så att det är dubbelbokningen som gör uppdateringen ogiltig
             customerMock.Setup(x => x.GetCustomerByIdAsync(1))

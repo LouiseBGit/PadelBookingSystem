@@ -109,7 +109,7 @@ namespace PadelBooking.Tests
             //kollar att controllern returnerar 400 bad request
             //badRequestObjectResult = 400 bad request med info i svaret
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-          
+
         }
 
         /// <summary>
@@ -181,7 +181,37 @@ namespace PadelBooking.Tests
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
         }
 
-    }
+        /// <summary>
+        /// testar om bookingController svarar med 404 Not Found, om bokning inte finns
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task UpdateBooking_ShouldReturnNotFound_WhenBookingDoesNotExist()
+        {
+            //arrange
+            var mock = new Mock<IBookingService>();
 
+            //bokningen finns inte
+            mock.Setup(x => x.GetBookingByIdAsync(1))
+                .ReturnsAsync((BookingDto?)null);
+
+            var controller = new BookingsController(mock.Object);
+
+            var dto = new UpdateBookingDto
+            {
+                CourtNumber = 1,
+                StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+                CustomerId = 1
+            };
+
+            //act
+            var result = await controller.UpdateBooking(1, dto);
+
+            //assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
+
+        }
+
+    }
 }
 

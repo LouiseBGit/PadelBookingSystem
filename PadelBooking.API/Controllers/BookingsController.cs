@@ -129,10 +129,18 @@ namespace PadelBooking.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateBooking(int id, UpdateBookingDto dto)
         {
+            //kollar om bokningen finns
+            var existingBooking = await _bookingService.GetBookingByIdAsync(id);
+
+            if (existingBooking == null)
+            {
+                return NotFound("Bokningen hittades inte");
+            }
             
             //service kontrollerar regler innan uppdatering görs
             var result = await _bookingService.UpdateBookingAsync(id, dto);
 
+            //bokningen finns, men någon regel har brutits
             if (result == null)
             {
                 return BadRequest("Misslyckad uppdatering...");
