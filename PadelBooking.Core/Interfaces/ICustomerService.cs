@@ -1,4 +1,5 @@
-﻿using PadelBooking.Core.Models;
+﻿using PadelBooking.Core.DTOs;
+using PadelBooking.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace PadelBooking.Core.Interfaces
 {
     public interface ICustomerService
     {
-        Task<List<Customer>> GetAllCustomerAsync();
-        Task<Customer?> GetCustomerByIdAsync(int id);
-        Task<bool> CreateCustomerAsync(Customer customer);
-        Task<bool> UpdateCustomerAsync(Customer customer);
+        Task<List<CustomerDto>> GetAllCustomerAsync();
+        Task<CustomerDto?> GetCustomerByIdAsync(int id);
+        Task<CustomerDto?> CreateCustomerAsync(CreateCustomerDto dto);
+        Task<CustomerDto?> UpdateCustomerAsync(int id, UpdateCustomerDto dto);
         Task<bool> DeleteCustomerAsync(int id);
 
 

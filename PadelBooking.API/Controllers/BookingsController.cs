@@ -66,49 +66,38 @@ namespace PadelBooking.API.Controllers
                 return NotFound();
             }
 
-            //mapping -entity till DTO
-            var bookingDto = new BookingDto
-            {
-                Id = booking.Id,
-                CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
-            };
-
-            return Ok(bookingDto);
+            return Ok(booking);
         }
         /// <summary>
-        /// skapar ny bokning 
-        /// validering sker i service
+        /// skapar ny bokning
+        /// validering och bokningsregler hanteras i service
         /// </summary>
-        /// <param name="booking"></param>
+        /// <param name="dto">uppgifter för bokningen som skapas</param>
+        /// <returns>201 Created med skapad bokning eller 400 Bad Request om bokning inte godkänns</returns>
         [HttpPost] 
         public async Task<ActionResult> CreateBooking(CreateBookingDto dto)
         {
-            //mapping - DTO till Entity
-            var booking = new Booking
-            {
-                CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime,
-                CustomerId = dto.CustomerId
-            };
+            
 
-            //service hanterar reglerna
-            var result = await _bookingService.CreateBookingAsync(booking);
+            //service hanterar reglerna och returnerar BookingDto om bokning lyckas
+            var result = await _bookingService.CreateBookingAsync(dto);
 
-            if (!result)
+            //om någon regel bryts returnerar service null
+            if (result == null)
             {
                 return BadRequest("Bokning bryter mot reglerna");
             }
 
-            var resultDto = new BookingDto
-            {
-                Id = booking.Id,
-                CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
-            };
 
-            //200 OK
-            return Ok(resultDto);
+            //Returnerar 201 Created eftersom en ny bokning skapats.
+            //GetBookingById är metoden som kan användas för att hämta bokningen igen.
+            //Id skickas med så rätt bokning kan hittas.
+            //Result är bokningen som skickas tillbaka.
+            return CreatedAtAction(
+                nameof(GetBookingById),
+                new { id = result.Id },
+                result);
+           
         }
 
         /// <summary>
@@ -117,23 +106,17 @@ namespace PadelBooking.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBooking(int id)
+        public async Task<ActionResult> DeleteBooking(int id)
         {
-            //koll om bokning finns 
-            var booking = await _bookingService.GetBookingByIdAsync(id);
-
-            if (booking == null)
-            {
-                return NotFound("Bokningen hittades inte");
-            }
-
+            //service kollar om nokning finns och försöker ta bort den
             var result = await _bookingService.DeleteBookingAsync(id);
 
             if (!result)
             {
-                return BadRequest("Kunde inte ta bort bokningen");
+                return NotFound("Bokningen hittades inte");
             }
 
+            //bokningen hittades och togs bort
             return Ok("Bokning borttagen");
 
         }
@@ -144,33 +127,26 @@ namespace PadelBooking.API.Controllers
         /// <param name="booking"></param>
         /// <returns>uppdaterad bokning</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBooking(int id, UpdateBookingDto dto)
+        public async Task<ActionResult> UpdateBooking(int id, UpdateBookingDto dto)
         {
-            //mapping - DTO till entity 
-            var booking = new Booking
-            {
-                Id = id,
-                CourtNumber = dto.CourtNumber,
-                StartTime = dto.StartTime,
-                CustomerId = dto.CustomerId
-            };
+            //kollar om bokningen finns
+            var existingBooking = await _bookingService.GetBookingByIdAsync(id);
 
-            //service kontrollerar regler innan uppdatering görs
-            var result = await _bookingService.UpdateBookingAsync(booking);
-
-            if (!result)
+            if (existingBooking == null)
             {
-                return BadRequest("Uppdateringen misslyckades pga bruten regel"); 
+                return NotFound("Bokningen hittades inte");
             }
+            
+            //service kontrollerar regler innan uppdatering görs
+            var result = await _bookingService.UpdateBookingAsync(id, dto);
 
-            var resultDto = new BookingDto
+            //bokningen finns, men någon regel har brutits
+            if (result == null)
             {
-                Id = booking.Id,
-                CourtNumber = booking.CourtNumber,
-                StartTime = booking.StartTime
-            };
-            //200 OK och uppdaterar bokning
-            return Ok("Bokning uppdaterad");
+                return BadRequest("Misslyckad uppdatering...");
+            }
+            
+            return Ok(result);
         }
         /// <summary>
         /// Hämtar alla bokningar för ett specifikt datum
@@ -178,18 +154,11 @@ namespace PadelBooking.API.Controllers
         /// <param name="date"></param>
         /// <returns>Lista med alla bokningar för vald dag</returns>
         [HttpGet("date")]
-        public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date)
+        public async Task<ActionResult<List<BookingDto>>> GetBookingsByDate(DateTime date, int? courtNumber)
         {
-            var bookings = await _bookingService.GetBookingsByDatesAsync(date);
+            var bookings = await _bookingService.GetBookingsByDatesAsync(date, courtNumber);
 
-            //var bookingDtos = bookings.Select(b => new BookingDto
-            //{
-            //    Id = b.Id,
-            //    CourtNumber = b.CourtNumber,
-            //    StartTime = b.StartTime
-            //}).ToList();
-
-            //return Ok(bookingDtos);
+            
             if (!bookings.Any())
             {
                 return NotFound("Inga bokningar...");
@@ -203,9 +172,25 @@ namespace PadelBooking.API.Controllers
         /// <param name="date"></param>
         /// <returns></returns>
         [HttpGet("available")]
-        public async Task<ActionResult<List<int>>> GetAvailableTimes([FromQuery] DateTime date)
+        public async Task<ActionResult<List<int>>> GetAvailableTimes([FromQuery] DateTime date, [FromQuery] int courtNumber)
         {
-            var result = await _bookingService.GetAvailableTimesAsync(date);
+            var result = await _bookingService.GetAvailableTimesAsync(date, courtNumber);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// hämtar lediga tider för vald bana mellan två datum
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="courtNumber"></param>
+        [HttpGet("available/between")]
+        public async Task<ActionResult<List<AvailableTimesDto>>> GetAvailableTimesBetweenDates([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] int? courtNumber)
+        {
+            //skickar datumen och banan till service
+            var result = await _bookingService.GetAvailableTimesBetweenDatesAsync(startDate, endDate, courtNumber);
+
+            //returnerar restultatet 
             return Ok(result);
         }
 
@@ -216,41 +201,18 @@ namespace PadelBooking.API.Controllers
         /// <param name="endDate"></param>
         /// <returns>Lista med bokningar mellan specifika datum</returns>
         [HttpGet("between")]
-        public async Task<ActionResult<List<BookingDto>>> GetBookingsBetweenDates(DateTime startDate, DateTime endDate)
+        public async Task<ActionResult<BookingSummaryDto>> GetBookingsBetweenDates(DateTime startDate, DateTime endDate)
         {
             var bookings = await _bookingService
                 .GetBookingsBetweenDatesAsync(startDate, endDate);
 
-            //var bookingDto = bookings.Select(b => new BookingDto
-            //{
-            //    Id = b.Id,
-            //    CourtNumber = b.CourtNumber,
-            //    StartTime = b.StartTime
-            //}).ToList();
-
-            //return Ok(bookingDto);
-            if (!bookings.Any())
+            if (bookings.TotalBookings == 0)
             {
                 return NotFound("Inga bokningar...");
             }
-            return Ok(new
-            {
-                NumberOfBookings = bookings.Count,
-                Bookings = bookings
-            });
-        }
-
-        [HttpGet("date/court")]
-        public async Task<ActionResult<List<BookingDto>>> GetByDateAndCourt([FromQuery] DateTime date, [FromQuery] int courtNumber)
-        {
-            var bookings = await _bookingService.GetBookingsByDateAndCourtAsync(date, courtNumber);
-            
-            if (!bookings.Any())
-            {
-                return NotFound("Inga bokningar...");
-            }
-
             return Ok(bookings);
         }
+
+        
     }
 }

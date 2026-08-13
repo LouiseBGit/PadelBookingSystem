@@ -3,6 +3,7 @@ using Moq;
 using PadelBooking.Core.Interfaces;
 using PadelBooking.Core.Models;
 using PadelBooking.Core.Services;
+using PadelBooking.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,24 +20,34 @@ namespace PadelBooking.Tests
         /// testar att giltig bokning godkäns
         /// </summary>
         [TestMethod]
-        public async Task CreateBooking_ShouldReturnTrue_WhenValidBooking()
+        public async Task CreateBooking_ShouldReturnBookingDto_WhenValidBooking()
         {
             //arrange
 
-            //skapar mock av IBookingRepository istället för att använda riktig databas
+            //fejkad repository för bokningar
             var mock = new Mock<IBookingRepository>();
-            //gör så att det ser ut som att inga bokningar finns
-            mock.Setup(x => x.GetAllBookingsAsync())
-                .ReturnsAsync(new List<Booking>());
+
+            //fejkad repository för kunder
+            var customerMock = new Mock<ICustomerRepository>();
+
+            //låtsas att kunden med id 1 finns
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
 
             //skapar service-klassen och skickar in mockad repository (object är fejk-versionen)
-            var service = new BookingService(mock.Object);
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //skapar en giltig bokning -med alla rätta regler
-            var booking = new Booking
+            var booking = new CreateBookingDto
             {
-                 StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
-                 CourtNumber = 1
+                StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+                CourtNumber = 1,
+                CustomerId = 1
             };
 
             //act
@@ -45,249 +56,312 @@ namespace PadelBooking.Tests
 
             //assert
             //kontrollerar att bokning godkäns
-            Assert.IsTrue(result);
+            Assert.IsNotNull(result);
         }
         /// <summary>
         /// testar att det inte går att göra bokning utanför öppettiderna
         /// </summary>
         [TestMethod]
-        public async Task CreateBooking_ShouldReturnFalse_WhenTimeIsInvalid()
+        public async Task CreateBooking_ShouldReturnNull_WhenTimeIsInvalid()
         {
             //arrange
             //skapar en mock av repositoryn
             var mock = new Mock<IBookingRepository>();
-            //låtsar att databasen inte innehåller bokningar
-            mock.Setup(x => x.GetAllBookingsAsync())
-                .ReturnsAsync(new List<Booking>());
+            var customerMock = new Mock<ICustomerRepository>();
+            //låtsas att kunden med id 1 finns
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
+            
             //skapar service-klassen
-            var service = new BookingService(mock.Object);
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //skapar en ogiltig bokning
-            var booking = new Booking
+            var booking = new CreateBookingDto
             {
                 StartTime = new DateTime(2026, 1, 1, 6, 0, 0),
-                CourtNumber = 1
+                CourtNumber = 1,
+                CustomerId = 1
             };
 
             //act
             var result = await service.CreateBookingAsync(booking);
 
             //assert
-            //förväntat svar är false
-            Assert.IsFalse(result);
+            //förväntat svar är null eftersom tiden är ogiltig
+            Assert.IsNull(result);
 
         }
         /// <summary>
         /// testar att bokningar utanför hela timmar nekas
         /// </summary>
         [TestMethod] 
-        public async Task CreateBooking_ShouldReturnFalse_WhenNotFullHour()
+        public async Task CreateBooking_ShouldReturnNull_WhenNotFullHour()
         {
             //arrange
             //skapar en mock av repositoryn
             var mock = new Mock<IBookingRepository>();
-            //låtsar att databasen inte innehåller bokningar
-            mock.Setup(x => x.GetAllBookingsAsync())
-                .ReturnsAsync(new List<Booking>());
+            var customerMock = new Mock<ICustomerRepository>();
+
+            //låtsas att kunden med id 1 finns
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
+
             //skapar service-klassen
-            var service = new BookingService(mock.Object);
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //skapar en ogiltig bokning
-            var booking = new Booking
+            var booking = new CreateBookingDto
             {
                 StartTime = new DateTime(2026, 1, 1, 10, 30, 0),
-                CourtNumber = 1
+                CourtNumber = 1,
+                CustomerId = 1
             };
-
             //act
             var result = await service.CreateBookingAsync(booking);
 
             //assert
-            //förväntat svar är false
-            Assert.IsFalse(result);
+            //förväntat svar är null eftersom tiden inte är en hel timme
+            Assert.IsNull(result);
         }
         /// <summary>
         /// testar att man inte kan göra en dubbelbokning
         /// </summary>
         [TestMethod]
-        public async Task CreateBooking_ShouldReturnFalse_WhenDoubleBooking()
+        public async Task CreateBooking_ShouldReturnNull_WhenDoubleBooking()
         {
             //arrange
             var mock = new Mock<IBookingRepository>();
+            //skapar en fejkad repository för kunder
+            var customerMock = new Mock<ICustomerRepository>();
+
+            //låtsas att kunden med id 1 finns
+            //så att det är dubbelbokningen som gör bokningen ogiltig
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
 
             //säger att bokningen redan finns
             mock.Setup(x => x.BookingExistsAsync(1, new DateTime(2026, 1, 1, 10, 0, 0), It.IsAny<int?>()))
                 .ReturnsAsync(true);
 
-            var service = new BookingService(mock.Object);
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //försöker lägga in samma bokning igen
-            var booking = new Booking
+            var booking = new CreateBookingDto
             {
-                Id = 1,
                 StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
-                CourtNumber = 1
+                CourtNumber = 1,
+                CustomerId = 1
             };
 
             //act
             var result = await service.CreateBookingAsync(booking);
 
             //assert
-            //förväntar oss false eftersom dubbelbokning inte får göras
-            Assert.IsFalse(result);
-
-
-            ////arrange
-            ////gör en bokning
-            //var existingBooking = new Booking
-            //{
-            //    StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
-            //    CourtNumber = 1
-            //};
-
-            //var mock = new Mock<IBookingRepository>();
-
-            ////fejkar att databasen redan innehåller en bokning
-            //mock.Setup(x => x.GetAllBookingsAsync())
-            //    .ReturnsAsync(new List<Booking>
-            //    {
-            //        existingBooking
-            //    });
-            ////skapar service-klassen
-            //var service = new BookingService(mock.Object);
-
-            ////försöker skapa en identisk bokning
-            //var booking = new Booking
-            //{
-            //    StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
-            //    CourtNumber = 1
-            //};
-
-            ////act
-            //var result = await service.CreateBookingAsync(booking);
-
-            ////assert
-            //Assert.IsFalse(result);
+            //förväntar oss null eftersom dubbelbokning inte får göras
+            Assert.IsNull(result);
 
         }
         /// <summary>
-        /// testar att man inte kan uppdatera en dubbelbokning 
+        /// testar att en bokning inte kan uppdateras
+        /// om den nya tiden och banan redan är bokad
         /// </summary>
         [TestMethod] 
-        public async Task UppdateBooking_ShouldReturnFalse_WhenDoubleBookingExists()
+        public async Task UppdateBooking_ShouldReturnNull_WhenDoubleBookingExists()
         {
             //arrange
             //mockar repository så vi inte använder riktig data
             var mock = new Mock<IBookingRepository>();
+            //skapar en fejkad repository för kunder
+            var customerMock = new Mock<ICustomerRepository>();
 
-            mock.Setup(x => x.BookingExistsAsync(1, new DateTime(2026, 1, 1, 10, 0, 0), 1))
+            //låtsas att bokningen redan finns med id 1, så testet kommer till koll för dubbelbokning
+            mock.Setup(x => x.GetBookingByIdAsync(1))
+                .ReturnsAsync(new Booking
+                {
+                    Id = 1,
+                    CourtNumber = 2,
+                    StartTime = new DateTime(2026, 1, 1, 12, 0, 0),
+                    CustomerId = 1
+                });
+
+            //låtsas att kunden med id 1 finns
+            //så att det är dubbelbokningen som gör uppdateringen ogiltig
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
+
+            //låtsas att det redan finns en annan bokning
+            //på bana 1 klockan 10:00
+            //id 1 skickas med för att ignorera bokningen som själv ska uppdateras
+            mock.Setup(x => x.BookingExistsAsync(
+                    1,
+                    new DateTime(2026, 1, 1, 10, 0, 0),
+                    1))
                 .ReturnsAsync(true);
 
-            ////fejkar att det redan finns en bokning
-            //mock.Setup(x => x.GetAllBookingsAsync())
-            //    .ReturnsAsync(new List<Booking>
-            //    {
-            //        new Booking
-            //        {
-            //            Id = 2,
-            //            CourtNumber = 1,
-            //            StartTime = new DateTime(2026, 1, 1, 10, 0, 0)
-            //        }
-            //    });
 
-            var service = new BookingService(mock.Object);
+            //skapar BookingService med båda fejkade repositories
+            var service = new BookingService(mock.Object, customerMock.Object);
 
-            var bookingUpdate = new Booking
+            //skapar DTO:n med de nya värden som bokningen ska uppdateras till
+            var bookingUpdate = new UpdateBookingDto
             {
-                Id = 1,
                 CourtNumber = 1,
-                StartTime = new DateTime(2026, 1, 1, 10, 0, 0)
+                StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+                CustomerId = 1
             };
 
             //act
-            var result = await service.UpdateBookingAsync(bookingUpdate);
+            //försöker uppdatera bokningen med id 1
+            var result = await service.UpdateBookingAsync(1, bookingUpdate);
 
             //assert
-            Assert.IsFalse(result);
+            //förväntar null eftersom den nya tiden och banan redan är bokad
+            Assert.IsNull(result);
         }
         /// <summary>
         /// testar att man inte kan boka en bana på fel ban-nummer
         /// </summary>
         [TestMethod]
-        public async Task CreateBooing_ShouldReturnFalse_WhenCourtNumberIsInvalid()
+        public async Task CreateBooking_ShouldReturnNull_WhenCourtNumberIsInvalid()
         {
             //arrange
             //skapar en mock av repository så vi slipper använda riktig databas
             var mock = new Mock<IBookingRepository>();
 
-            ////ställer in mocken så den inte hittar dubbelbokning
-            //mock.Setup(x => x.BookingExistsAsync(0, new DateTime(2026, 1, 1, 10, 0, 0), null))
-            //.ReturnsAsync(false);
+            //skapar en fejk-repository för kunder
+            var customerMock = new Mock<ICustomerRepository>();
 
-            //skapar service-klassen och skickar in fejkad mock-repository
-            var service = new BookingService(mock.Object);
+            //låtsas att kunden med id 1 finns
+            //så att det är bannumret som gör bokningen ogiltig
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
+
+            //skapar BookingService med båda de fejkade repositories
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //skapar en bokning med ogiltig bana
-            var booking = new Booking
+            var booking = new CreateBookingDto
             {
                 StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
-                CourtNumber = 0
+                CourtNumber = 0,
+                CustomerId = 1
             };
 
             //act
-            //anropar metoden som ska testas
+            //anropar metoden som ska testas -försöker skapa bokningen
             var result = await service.CreateBookingAsync(booking);
 
             //assert
-            //förväntar false eftersom det är ett ogiltigt nummer
-            Assert.IsFalse(result);
+            //förväntar null eftersom det är ett ogiltigt nummer
+            Assert.IsNull(result);
         }
         /// <summary>
         /// testar att man kan uppdatera en bokning när alla regler följs
         /// </summary>
         [TestMethod]
-        public async Task UpdateBooking_ShouldReturnTrue_WhenValidUpdate()
+        public async Task UpdateBooking_ShouldReturnBookingDto_WhenValidUpdate()
         {
             //arrange
-            //skapar en mock av repository
+
+            //skapar en fejkad repository för bokningar
             var mock = new Mock<IBookingRepository>();
 
-            //låtsas att det inte finns några bokningar som krockar
-            mock.Setup(x => x.GetAllBookingsAsync())
-                .ReturnsAsync(new List<Booking>());
+            //skapar en fejkad repository för kunder
+            var customerMock = new Mock<ICustomerRepository>();
 
-            //skapar service-klassen
-            var service = new BookingService(mock.Object);
+            //låtsas att kunden med id 1 finns
+            customerMock.Setup(x => x.GetCustomerByIdAsync(1))
+                .ReturnsAsync(new Customer
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    LastName = "Kund"
+                });
 
-            //skapar en giltig uppdatering
-            var bookingToUpdate = new Booking
+            //låtsas att bokningen med id 1 redan finns
+            //det är den bokning som vi ska uppdatera
+            mock.Setup(x => x.GetBookingByIdAsync(1))
+                .ReturnsAsync(new Booking
+                {
+                    Id = 1,
+                    CourtNumber = 1,
+                    StartTime = new DateTime(2026, 1, 1, 10, 0, 0),
+                    CustomerId = 1
+                });
+
+            //låtsas att den nya tiden och banan inte krockar
+            //med någon annan bokning
+            mock.Setup(x => x.BookingExistsAsync(
+                2,
+                new DateTime(2026, 1, 1, 12, 0, 0),
+                1))
+                .ReturnsAsync(false);
+
+            //skapar BookingService med båda fejkade repositories
+            var service = new BookingService(mock.Object, customerMock.Object);
+
+            //skapar DTO:n med de nya värdena för bokningen
+            var bookingToUpdate = new UpdateBookingDto
             {
-                Id = 1,
                 CourtNumber = 2,
-                StartTime = new DateTime(2026, 1, 1, 12, 0, 0)
+                StartTime = new DateTime(2026, 1, 1, 12, 0, 0),
+                CustomerId = 1
             };
 
             //act
-            //anropar metoden som ska testas
-            var result = await service.UpdateBookingAsync(bookingToUpdate);
+
+            //försöker uppdatera bokningen med id 1
+            var result = await service.UpdateBookingAsync(1, bookingToUpdate);
 
             //assert
-            //förväntar true eftersom alla regler följs för uppdartering
-            Assert.IsTrue(result);
 
+            //kontrollerar att uppdateringen lyckades
+            //en giltig uppdatering ska returnera en BookingDto
+            Assert.IsNotNull(result);
         }
         /// <summary>
-        /// testar så man kan se lediga tider när bokade tider existerar 
+        /// testar att lediga tider returneras för en specifik bana
+        /// när vissa tider redan är bokade
         /// </summary>
         [TestMethod]
         public async Task GetAvailableTimes_ShouldReturnAvailableHours_WhenSomeTimesAreBooked()
         {
             //arrange
-            //mockar repository så vi inte använder riktig data
+            //skapar en fejkad repository för bokninhar
             var mock = new Mock<IBookingRepository>();
 
-            //låtsar att två tider redan är bokade
-            mock.Setup(x => x.GetBookingsByDateAsync(new DateTime(2026, 1, 1)))
+            //skapar en fejkad repository för bokningar
+            var customerMock = new Mock<ICustomerRepository>();
+
+            //låtsas att bana 1 har två bokade tider den valda dagen -kl 10.00 och 14.00
+            mock.Setup(x => x.GetBookingsByDateAndCourtAsync(
+                new DateTime(2026, 1, 1),
+                1))
                 .ReturnsAsync(new List<Booking>
                 {
                     new Booking
@@ -297,38 +371,45 @@ namespace PadelBooking.Tests
                     },
                     new Booking
                     {
-                        CourtNumber = 2,
-                        StartTime = new DateTime(2026, 1, 1, 14, 0, 0)
+                         CourtNumber = 1,
+                         StartTime = new DateTime(2026, 1, 1, 14, 0, 0)
                     }
                 });
 
-            var service = new BookingService(mock.Object);
+            //skapar BookingService med båda fejk-repositories
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //act
-            var result = await service.GetAvailableTimesAsync(new DateTime(2026, 1, 1));
+            //hämtar lediga tider för bana 1 den 1 jan
+            var result = await service.GetAvailableTimesAsync(
+                new DateTime(2026, 1, 1),
+                1);
 
             //assert
-            //bokade tider ska inte finnas med
+            //10 och 14 ska inte finnas då de redan är bokade
             Assert.IsFalse(result.Contains(10));
             Assert.IsFalse(result.Contains(14));
 
-            //lediga tider ska finnas med
+            //11.00 och 15.00 ska vara lediga
             Assert.IsTrue(result.Contains(11));
             Assert.IsTrue(result.Contains(15));
 
-            //totalt ska det finnas 14 tider kvar om 2 är bokade
-            Assert.AreEqual(14, result.Count);
+            //13 tider ska vara lediga
+            Assert.AreEqual(13, result.Count);
         }
         /// <summary>
         /// testar att service-metoden reutnerar de bokningar som repositoryn hämtar mellan två angivna datum
         /// </summary>
         [TestMethod]
-        public async Task GetBookingsBetweenDates_ShouldReturnBookingsWithinDateRange()
+        public async Task GetBookingsBetweenDates_ShouldReturnBookingSummary()
         {
             //arrange
             //skapar en mock av repository istället för att avända riktig data
             var mock = new Mock<IBookingRepository>();
 
+            //skapar en fejkad repositry för kunder
+            var customerMock = new Mock<ICustomerRepository>();
+            
             //skapar testdata som repositoryn ska returnera 
             var bookings = new List<Booking>
             {
@@ -336,30 +417,49 @@ namespace PadelBooking.Tests
                 {
                     Id = 1,
                     CourtNumber = 1,
-                    StartTime = new DateTime(2026, 1, 10, 10, 0,0)
+                    StartTime = new DateTime(2026, 1, 10, 10, 0,0),
+                    //lägger till kund eftersom Service använder b.Customer när Booking görs om till BookingDto
+                    Customer = new Customer
+                    {
+                        FirstName = "Test",
+                        LastName = "Kund"
+                    }
                 }
             };
 
-            //om metoden GetBookingsBetweenDatesAsync anropas med dessa datum ska den returnera listan bookings
+            //låtsar att repositoryn returnerar vår testbokning när bokningar mellan dessa datum hämtas
             mock.Setup(x => x.GetBookingsBetweenDatesAsync(
                 new DateTime(2026, 1, 1),
                 new DateTime(2026, 1, 31)))
                 .ReturnsAsync(bookings);
 
-            //skapar service-klassen och skickar in den fejkade repositoryn
-            var service = new BookingService(mock.Object);
+            //skapar BookingService med båda fejkade repositories
+            var service = new BookingService(mock.Object, customerMock.Object);
 
             //act
-            //anropar metoden som ska testas 
+            //hämtar sammanfattningen för bokningar mellan datum
             var result = await service.GetBookingsBetweenDatesAsync(
                 new DateTime(2026, 1, 1),
                 new DateTime(2026, 1, 31));
 
             //assert
-            //resultatet ska returnera den bokning som repositoryn reutrnerad 
-            Assert.AreEqual(1, result.Count);
-            //kontrollerar att bokningen ligger på bana 1.
-            Assert.AreEqual(1, result[0].CourtNumber);
+            //kollar om det totalt finns en bokning
+            Assert.AreEqual(1, result.TotalBookings);
+
+            //koollar att bokningen ligger på bana 1
+            Assert.AreEqual(1, result.Court1Total);
+
+            //inga bokningar ska finnas på bana 2 och 3
+            Assert.AreEqual(0, result.Court2Total);
+            Assert.AreEqual(0, result.Court3Total);
+
+            //kollar så bokningslistan innehåller en bokning
+            Assert.AreEqual(1, result.Bookings.Count);
+
+            //kollar så bokningen i listan ligger på bana 1
+            Assert.AreEqual(1, result.Bookings[0].CourtNumber);
+
+            
         }
     }
 }

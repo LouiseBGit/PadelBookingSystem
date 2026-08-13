@@ -28,15 +28,16 @@ namespace PadelBooking.Core.Interfaces
         /// <summary>
         /// skapar en ny bokning
         /// </summary>
-        /// <param name="booking"></param>
-        /// <returns>returnerar true om bokningen skapades, annars false om regel bröts</returns>
-        Task<bool> CreateBookingAsync(Booking booking);
+        /// <param name="dto"></param>
+        /// <returns>en BookingDto om lyckas, annars null</returns>
+        Task<BookingDto?> CreateBookingAsync(CreateBookingDto dto);
         /// <summary>
-        /// uppdaterar en befintlig bokning
+        /// Uppdaterar en bokning med specifikt id
         /// </summary>
-        /// <param name="booking"></param>
-        /// <returns>returnerar true om uppdateringen lyckades, annars false om regel bröts</returns>
-        Task<bool> UpdateBookingAsync(Booking booking);
+        /// <param name="dto"></param>
+        /// <param name="id"></param>
+        /// <returns>BookingDto</returns>
+        Task<BookingDto?> UpdateBookingAsync(int id, UpdateBookingDto dto);
         /// <summary>
         /// tar bort en specifik bokning baserat på ID
         /// </summary>
@@ -44,18 +45,19 @@ namespace PadelBooking.Core.Interfaces
         /// <returns>returnerar true om borttagningen lyckades</returns>
         Task<bool> DeleteBookingAsync(int id);
 
-        Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date);
+        Task<List<BookingDto>> GetBookingsByDatesAsync(DateTime date, int? courtNumber);
 
-        Task<List<int>> GetAvailableTimesAsync(DateTime date);
+        Task<List<int>> GetAvailableTimesAsync(DateTime date, int courtNumber);
         /// <summary>
-        /// Bokning mellan specifikt start- och slutdatum
+        /// Hämtar sammanfattning mellan specifikt start- och slutdatum
         /// </summary>
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
-        /// <returns></returns>
-        Task<List<BookingDto>> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
+        /// <returns>en sammandfattning med bokningar och antal bokningar per bana</returns>
+        Task<BookingSummaryDto> GetBookingsBetweenDatesAsync(DateTime startDate, DateTime endDate);
 
         Task<List<BookingDto>> GetBookingsByDateAndCourtAsync(DateTime date, int courtNumber);
 
+        Task<List<AvailableTimesDto>> GetAvailableTimesBetweenDatesAsync(DateTime startDate, DateTime endDate, int? courtNumber);
     }
 }

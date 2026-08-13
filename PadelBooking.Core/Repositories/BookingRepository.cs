@@ -69,17 +69,7 @@ namespace PadelBooking.Core.Repositories
         //uppdaterar en redan existerande bokning i databasen
         public async Task UpdateAsync(Booking booking)
         {
-            //var existing = await _context.Bookings
-            //    .FirstOrDefaultAsync(b => b.Id == booking.Id);
-
-            //if (existing == null)
-            //{
-            //    throw new Exception("bokning hittades inte...");
-            //}
-
-            //existing.CourtNumber = booking.CourtNumber;
-            //existing.StartTime = booking.StartTime;
-            //existing.CustomerId = booking.CustomerId;
+            
 
             _context.Bookings.Update(booking);
             //spara uppdateringen
